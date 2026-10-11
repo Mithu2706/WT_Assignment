@@ -21,11 +21,8 @@ One coherent portal built in three layers that share **one MySQL database and on
 3. [Screenshots](#screenshots)
 4. [Quick start (Windows + XAMPP)](#quick-start-windows--xampp)
 5. [Application URLs](#application-urls)
-6. [Testing](#testing)
-7. [Security notes](#security-notes)
-8. [Known limitations](#known-limitations)
-9. [Project structure](#project-structure)
-10. [Documentation](#documentation)
+6. [Project structure](#project-structure)
+7. [Documentation](#documentation)
 
 ---
 
@@ -136,48 +133,6 @@ The PHP URLs are served by **Apache on port 80**; the Servlet URLs by **Tomcat o
 Accounts: create them with `php-admin/bin/create_user.php` (`--role=admin|staff|student`). Students who register through the form can sign in to the Servlet portal with their **roll number** and password.
 
 ---
-
-## Testing
-
-Everything below was **executed** against the running stack (Apache 2.4 + PHP 8.2.12, MariaDB 10.4.32, Tomcat 8.5.96 on JDK 24, Windows 11). Details and full case lists: **[docs/TESTING.md](docs/TESTING.md)**.
-
-| Suite | Command | Result |
-|---|---|---|
-| Frontend unit tests (Node) | `node --test frontend/tests/validation.test.js` | 13 / 13 passed |
-| PHP unit + DB integration | `php php-admin/tests/run_tests.php` | 94 / 94 passed |
-| Java JUnit (incl. live-DB DAO tests) | `cd java-servlet && mvnw.cmd test` | 21 / 21 passed |
-| End-to-end HTTP (PHP + Java + DB) | `python tests/e2e_test.py` | 130 / 130 passed |
-| End-to-end with **real** session expiry | `python tests/e2e_test.py --session-expiry` | 133 / 133 passed |
-| Browser checks + screenshots (Chrome) | `python tests/capture_screenshots.py` | 23 / 23 passed |
-| PHP syntax (`php -l`, 34 files), JS syntax | see TESTING.md | all clean |
-
-The end-to-end suite adds a student through PHP, registers another through the public endpoint, then confirms the Java portal shows the same records and streams **byte-identical** files. Afterwards it deletes everything it created.
-
----
-
-## Security notes
-
-| Threat | Protection |
-|---|---|
-| SQL injection | PDO with native prepared statements (`EMULATE_PREPARES=false`); JDBC `PreparedStatement` everywhere; `ORDER BY` from a whitelist; `LIKE` wildcards escaped |
-| XSS | PHP `e()` = `htmlspecialchars(ENT_QUOTES)` on every output; JSP `<c:out>` / `fn:escapeXml`; JS uses `textContent`; Content-Security-Policy without inline scripts/styles |
-| CSRF | Session token in every state-changing form (add, edit, delete, upload, logout, login); single-use token for public registration + Origin check; `hash_equals` / `MessageDigest.isEqual` |
-| Passwords | bcrypt cost 12 (`password_hash`), verified in Java with jBCrypt; strength policy enforced server-side; no default passwords anywhere |
-| Sessions | HttpOnly + SameSite cookies, strict mode, new session ID after login, idle timeout (`.env`), logout destroys server-side session, `Cache-Control: no-store` |
-| Authorisation | Every PHP page calls `Auth::requireAdmin()` (re-checks the account in the DB); Java `AuthFilter` on `/*`; students limited to their own profile/files |
-| File uploads | Size limits; real type from file bytes (`finfo`, `getimagesize`, `%PDF-`); allow-list JPG/PNG/WebP/PDF; embedded-code rejection; random 128-bit names; extension from detected type; `is_uploaded_file` check |
-| Path traversal | URLs carry only numeric IDs; stored paths must match `students/<id>/<category>/<32hex>.<ext>`; `realpath`/`toRealPath` containment check; owner check on delete |
-| Private documents | Storage outside public web roots, `Require all denied`, PHP engine off, no directory listing; streamed only after authentication |
-| Information leakage | Errors logged (`storage/logs`, Tomcat log), users see generic messages; `display_errors=0`; `X-Powered-By` removed; generic login errors with timing equalisation |
-
-## Known limitations
-- **Two separate logins.** PHP and Java do not share a session (by design; documented). The same account works in both.
-- **No brute-force lockout.** Login attempts are only slowed (random delay, constant-time checks), not counted or locked.
-- **HTTP only on localhost.** Cookies are marked `Secure` automatically when served over HTTPS, but HTTPS itself is not configured locally.
-- **Tomcat 8.5 is end-of-life.** It's the version bundled with XAMPP. The code targets Servlet 3.1 and runs unchanged on Tomcat 9; Tomcat 10+ needs the `javax`→`jakarta` rename (see SETUP.md).
-- **Simple JDBC connections.** The Java module opens a `DriverManager` connection per DAO call (no pool). This is fine for coursework load.
-- **CLI-only account management.** Users are managed with the CLI scripts; there is no user-management UI and no "forgot password" flow.
-- **No antivirus scanning.** Uploaded files are content-checked but not virus-scanned.
 
 ## Project structure
 
