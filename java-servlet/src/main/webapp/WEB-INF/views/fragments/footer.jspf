@@ -1,0 +1,7 @@
+<%-- Shared page footer: closes the <main> opened in header.jspf. --%>
+</main>
+<footer class="site-footer">
+    Student Profile Portal · Java Servlet module · data shared with the PHP admin panel
+</footer>
+</body>
+</html>

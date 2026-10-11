@@ -1,0 +1,3 @@
+# Application code, config, CLI scripts and tests are never web-accessible.
+# Only php-admin/public/ re-allows access (see public/.htaccess).
+Require all denied

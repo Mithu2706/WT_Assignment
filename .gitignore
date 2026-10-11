@@ -1,0 +1,41 @@
+# --- Secrets / local configuration (never commit) ---
+.env
+.env.*
+!.env.example
+*.local.*
+*.local
+*.pem
+*.key
+*.p12
+*.jks
+
+# --- Uploaded student files (private data, never commit) ---
+storage/uploads/*
+!storage/uploads/.gitkeep
+!storage/uploads/.htaccess
+storage/logs/*
+!storage/logs/.gitkeep
+*.log
+
+# --- Java / Maven build output ---
+java-servlet/target/
+*.class
+*.war
+
+# --- Test artefacts ---
+tests/.artifacts/
+tests/__pycache__/
+**/__pycache__/
+*.pyc
+
+# --- Editors / OS ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+
+# --- Faculty question paper (kept local, not published) ---
+/Assignment_2_WebTechnology*.pdf

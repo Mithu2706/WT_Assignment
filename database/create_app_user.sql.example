@@ -1,0 +1,19 @@
+-- =====================================================================
+--  Creates the low-privilege database account used by BOTH applications.
+--  1. Copy this file (e.g. to create_app_user.local.sql - it is not committed)
+--  2. Replace CHANGE_ME with a long random password
+--  3. Put the same password in .env (DB_PASS=...)
+--  4. Run:  mysql -u root -p < database/create_app_user.local.sql
+--
+--  The app only needs data access (SELECT/INSERT/UPDATE/DELETE); it cannot
+--  drop tables or create other users.  Both 'localhost' and '127.0.0.1' are
+--  created because XAMPP's MariaDB treats them as different hosts.
+-- =====================================================================
+
+CREATE USER IF NOT EXISTS 'smp_app'@'localhost' IDENTIFIED BY 'CHANGE_ME';
+CREATE USER IF NOT EXISTS 'smp_app'@'127.0.0.1' IDENTIFIED BY 'CHANGE_ME';
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON wt_student_portal.* TO 'smp_app'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE ON wt_student_portal.* TO 'smp_app'@'127.0.0.1';
+
+FLUSH PRIVILEGES;

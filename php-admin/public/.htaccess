@@ -1,0 +1,9 @@
+# The ONLY PHP folder that browsers may reach.
+Require all granted
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_headers.c>
+    # "set" (not "always set") replaces the header PHP already sends instead of duplicating it
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>

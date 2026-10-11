@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Student registration form for the Student Admission Portal">
+    <title>Student Registration · Admission Portal</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- validation.js is loaded with "defer" so the HTML is parsed first -->
+    <script src="js/validation.js" defer></script>
+</head>
+<body class="register-page">
+<a class="skip-link" href="#registration-form">Skip to registration form</a>
+
+<div class="split">
+    <!-- ============ Left: brand / information panel ============ -->
+    <aside class="brand-panel" aria-label="About the admission portal">
+        <a class="brand" href="index.html">
+            <img src="assets/logo.svg" alt="" width="40" height="40">
+            <span>Student Admission Portal</span>
+        </a>
+
+        <div class="brand-copy">
+            <p class="eyebrow">Academic Year 2026 – 27</p>
+            <h1>Begin your registration</h1>
+            <p>Fill in your details once. Your record, profile photo and documents are
+               stored securely and reviewed by the admissions office.</p>
+        </div>
+
+        <ol class="steps" aria-label="Registration steps">
+            <li><span>1</span> Personal &amp; academic details</li>
+            <li><span>2</span> Create a strong password</li>
+            <li><span>3</span> Upload photo and ID proof</li>
+        </ol>
+
+        <p class="brand-foot">Fields marked <span class="req" aria-hidden="true">*</span> are required.</p>
+    </aside>
+
+    <!-- ============ Right: the form ============ -->
+    <main class="form-panel" id="main">
+        <!-- Success panel: shown by JavaScript after the server accepts the registration -->
+        <section class="success-card" id="success-card" hidden tabindex="-1" aria-labelledby="success-title">
+            <div class="success-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="28" height="28"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h2 id="success-title">Registration received</h2>
+            <p id="success-message">Your details were saved successfully.</p>
+            <dl class="success-details" id="success-details"></dl>
+            <button type="button" class="btn btn-ghost" id="register-another">Register another student</button>
+        </section>
+
+        <!--
+            novalidate: the browser's own bubbles are turned off so that our
+            JavaScript can show consistent, accessible messages. All HTML5
+            constraint attributes (required, pattern, maxlength, accept ...)
+            are still present and are re-checked by the JavaScript and,
+            most importantly, by the PHP server.
+        -->
+        <form id="registration-form" class="card form-card"
+              action="../php-admin/public/register.php"
+              method="post"
+              enctype="multipart/form-data"
+              novalidate
+              data-token-url="../php-admin/public/api/registration-token.php"
+              aria-describedby="form-intro">
+
+            <header class="form-header">
+                <h2>Student registration</h2>
+                <p id="form-intro">All information is validated in your browser and again on the server.</p>
+            </header>
+
+            <!-- Error summary: filled on submit when fields are invalid -->
+            <div class="alert alert-error" id="error-summary" role="alert" hidden tabindex="-1">
+                <strong>Please correct the highlighted fields:</strong>
+                <ul id="error-list"></ul>
+            </div>
+            <div class="alert alert-info" id="form-notice" role="status" hidden></div>
+
+            <!-- Single-use anti-CSRF token, fetched from the server on page load -->
+            <input type="hidden" name="csrf_token" id="csrf_token" value="">
+
+            <fieldset>
+                <legend>Personal details</legend>
+
+                <div class="field">
+                    <label for="full_name">Student name <span class="req" aria-hidden="true">*</span></label>
+                    <input type="text" id="full_name" name="full_name"
+                           required minlength="2" maxlength="100"
+                           autocomplete="name" spellcheck="false"
+                           placeholder="e.g. Priya Raman"
+                           aria-describedby="full_name-hint full_name-error">
+                    <p class="hint" id="full_name-hint">Letters, spaces, dots, apostrophes and hyphens.</p>
+                    <p class="field-error" id="full_name-error" aria-live="polite"></p>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="roll_number">Roll number <span class="req" aria-hidden="true">*</span></label>
+                        <input type="text" id="roll_number" name="roll_number"
+                               required minlength="5" maxlength="15"
+                               pattern="[A-Za-z0-9]{5,15}"
+                               autocapitalize="characters" autocomplete="off" spellcheck="false"
+                               placeholder="e.g. 23CS045"
+                               aria-describedby="roll_number-hint roll_number-error">
+                        <p class="hint" id="roll_number-hint">5–15 letters or digits, no spaces.</p>
+                        <p class="field-error" id="roll_number-error" aria-live="polite"></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="course">Course <span class="req" aria-hidden="true">*</span></label>
+                        <div class="select-wrap">
+                            <select id="course" name="course" required aria-describedby="course-error">
+                                <option value="">Select a course</option>
+                                <option value="BE-CSE">B.E. Computer Science and Engineering</option>
+                                <option value="BE-ECE">B.E. Electronics and Communication Engineering</option>
+                                <option value="BE-EEE">B.E. Electrical and Electronics Engineering</option>
+                                <option value="BE-MECH">B.E. Mechanical Engineering</option>
+                                <option value="BTECH-IT">B.Tech. Information Technology</option>
+                                <option value="BTECH-AD">B.Tech. Artificial Intelligence and Data Science</option>
+                            </select>
+                        </div>
+                        <p class="field-error" id="course-error" aria-live="polite"></p>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="email">Email address <span class="req" aria-hidden="true">*</span></label>
+                    <input type="email" id="email" name="email"
+                           required maxlength="150"
+                           autocomplete="email" inputmode="email" spellcheck="false"
+                           placeholder="name@example.edu"
+                           aria-describedby="email-error">
+                    <p class="field-error" id="email-error" aria-live="polite"></p>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Account security</legend>
+
+                <div class="field">
+                    <label for="password">Password <span class="req" aria-hidden="true">*</span></label>
+                    <div class="password-wrap">
+                        <input type="password" id="password" name="password"
+                               required minlength="8" maxlength="64"
+                               autocomplete="new-password"
+                               aria-describedby="password-strength password-rules password-error">
+                        <button type="button" class="toggle-visibility" data-toggle="password"
+                                aria-controls="password" aria-pressed="false">Show</button>
+                    </div>
+
+                    <!-- Strength meter: updated live by validation.js -->
+                    <div class="strength" id="password-strength" aria-live="polite">
+                        <div class="strength-bar" aria-hidden="true"><span id="strength-fill"></span></div>
+                        <p class="strength-label">Strength: <strong id="strength-text">not entered</strong></p>
+                    </div>
+                    <ul class="rules" id="password-rules" aria-label="Password requirements">
+                        <li data-rule="length">At least 8 characters</li>
+                        <li data-rule="upper">An uppercase letter (A–Z)</li>
+                        <li data-rule="lower">A lowercase letter (a–z)</li>
+                        <li data-rule="digit">A number (0–9)</li>
+                        <li data-rule="special">A symbol such as ! @ # $ %</li>
+                    </ul>
+                    <p class="field-error" id="password-error" aria-live="polite"></p>
+                </div>
+
+                <div class="field">
+                    <label for="confirm_password">Confirm password <span class="req" aria-hidden="true">*</span></label>
+                    <div class="password-wrap">
+                        <input type="password" id="confirm_password" name="confirm_password"
+                               required maxlength="64" autocomplete="new-password"
+                               aria-describedby="confirm_password-error">
+                        <button type="button" class="toggle-visibility" data-toggle="confirm_password"
+                                aria-controls="confirm_password" aria-pressed="false">Show</button>
+                    </div>
+                    <p class="field-error" id="confirm_password-error" aria-live="polite"></p>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Documents</legend>
+
+                <div class="field">
+                    <span class="label" id="profile_photo-label">Profile photo <span class="req" aria-hidden="true">*</span></span>
+                    <div class="file-drop" id="profile_photo-drop">
+                        <img class="file-preview" id="profile_photo-preview" alt="" hidden>
+                        <div class="file-drop-text">
+                            <label for="profile_photo" class="file-button">Choose photo</label>
+                            <span class="file-name" id="profile_photo-name">No file selected</span>
+                            <span class="hint">JPG, PNG or WebP · max 2 MB</span>
+                        </div>
+                        <input type="file" id="profile_photo" name="profile_photo" class="visually-hidden-file"
+                               required accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                               aria-labelledby="profile_photo-label" aria-describedby="profile_photo-error">
+                    </div>
+                    <p class="field-error" id="profile_photo-error" aria-live="polite"></p>
+                </div>
+
+                <div class="field">
+                    <span class="label" id="id_proof-label">ID proof <span class="optional">(optional)</span></span>
+                    <div class="file-drop" id="id_proof-drop">
+                        <div class="file-drop-text">
+                            <label for="id_proof" class="file-button">Choose document</label>
+                            <span class="file-name" id="id_proof-name">No file selected</span>
+                            <span class="hint">PDF, JPG or PNG · max 5 MB</span>
+                        </div>
+                        <input type="file" id="id_proof" name="id_proof" class="visually-hidden-file"
+                               accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                               aria-labelledby="id_proof-label" aria-describedby="id_proof-error">
+                    </div>
+                    <p class="field-error" id="id_proof-error" aria-live="polite"></p>
+                </div>
+            </fieldset>
+
+            <div class="field checkbox-field">
+                <input type="checkbox" id="declaration" name="declaration" value="1" required
+                       aria-describedby="declaration-error">
+                <label for="declaration">I confirm that the information provided is accurate.</label>
+                <p class="field-error" id="declaration-error" aria-live="polite"></p>
+            </div>
+
+            <div class="form-actions">
+                <button type="reset" class="btn btn-ghost">Clear form</button>
+                <button type="submit" class="btn btn-primary" id="submit-button">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <span class="btn-label">Submit registration</span>
+                </button>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>

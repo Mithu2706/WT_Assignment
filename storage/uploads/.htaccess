@@ -1,0 +1,10 @@
+# Uploaded student files: private. They are streamed only through the
+# authenticated endpoints (php-admin/public/file.php and the Java FileServlet).
+Require all denied
+Options -Indexes -ExecCGI
+# Even if access were opened by mistake, never execute anything stored here.
+<IfModule php_module>
+    php_flag engine off
+</IfModule>
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .pl .py .cgi .jsp .asp
+SetHandler none
