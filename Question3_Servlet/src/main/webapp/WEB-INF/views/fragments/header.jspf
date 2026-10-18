@@ -1,0 +1,39 @@
+<%--
+    fragments/header.jspf – common top part of every logged-in page.
+    Included STATICALLY (<%@ include %>) so it shares the page's variables
+    and taglib declarations. Expects "pageTitle" to be set with <c:set>.
+--%>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><c:out value="${pageTitle}" /> | Student Profile Portal</title>
+    <link rel="stylesheet" href="${ctx}/css/servlet.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="container topbar-inner">
+        <a class="brand" href="${ctx}/students">
+            <span class="brand-logo" aria-hidden="true">SP</span>
+            <span>
+                <span class="brand-title">Student Profile Portal</span>
+                <span class="brand-subtitle">Java Servlet · JSP · JDBC</span>
+            </span>
+        </a>
+        <nav class="nav" aria-label="Portal navigation">
+            <a href="${ctx}/students" class="active">Students</a>
+        </nav>
+        <c:if test="${not empty sessionScope.loggedInUser}">
+            <div class="user-box">
+                <span class="user-name">Signed in as
+                    <strong><c:out value="${sessionScope.loggedInUser.fullName}" /></strong></span>
+                <form method="post" action="${ctx}/logout" class="inline-form">
+                    <button type="submit" class="btn btn-light btn-sm">Logout</button>
+                </form>
+            </div>
+        </c:if>
+    </div>
+</header>
+<main class="container page">

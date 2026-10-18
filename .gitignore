@@ -1,41 +1,15 @@
-# --- Secrets / local configuration (never commit) ---
-.env
-.env.*
-!.env.example
-*.local.*
-*.local
-*.pem
-*.key
-*.p12
-*.jks
+# Build output of the servlet module (rebuild with mvn clean package or build.bat)
+Question3_Servlet/target/
 
-# --- Uploaded student files (private data, never commit) ---
-storage/uploads/*
-!storage/uploads/.gitkeep
-!storage/uploads/.htaccess
-storage/logs/*
-!storage/logs/.gitkeep
-*.log
+# Files uploaded while running the admin panel (keep the folders and the .htaccess protection)
+Question2_PHP/uploads/profiles/*
+Question2_PHP/uploads/documents/*
+!Question2_PHP/uploads/profiles/.gitkeep
+!Question2_PHP/uploads/documents/.gitkeep
 
-# --- Java / Maven build output ---
-java-servlet/target/
-*.class
-*.war
-
-# --- Test artefacts ---
-tests/.artifacts/
-tests/__pycache__/
-**/__pycache__/
-*.pyc
-
-# --- Editors / OS ---
-.vscode/*
-!.vscode/extensions.json
+# IDE / OS files
 .idea/
+.vscode/
 *.iml
-.DS_Store
 Thumbs.db
-
-
-# --- Faculty question paper (kept local, not published) ---
-/Assignment_2_WebTechnology*.pdf
+.DS_Store

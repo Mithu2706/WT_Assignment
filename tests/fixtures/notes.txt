@@ -1,1 +1,0 @@
-Plain text files are not an allowed upload type.

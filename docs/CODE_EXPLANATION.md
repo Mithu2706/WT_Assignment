@@ -1,223 +1,198 @@
-# Code Explanation
+# Code Explanation (Viva Guide)
 
-This document walks through the important files and the flow of data through the system. It is written to help with the viva. Every source file also carries inline comments at the important points.
-
----
-
-## 1. Database (`database/schema.sql`)
-
-```
-courses (id PK, code UNIQUE, name UNIQUE)
-   1 ─────< students (id PK, roll_number UNIQUE, full_name, email UNIQUE, course_id FK, registration_source, created_at, updated_at)
-                1 ─────< student_files (id PK, student_id FK, category, original_name, stored_name UNIQUE,
-                │                       relative_path UNIQUE, mime_type, file_size, checksum_sha256, uploaded_by FK, uploaded_at)
-                1 ───── 0..1 users (id PK, username UNIQUE, display_name, password_hash, role, student_id FK UNIQUE, is_active, ...)
-```
-
-| Design decision | Reason |
-|---|---|
-| `courses` lookup table | a course name is stored once (3NF); the form sends a short code (`BE-CSE`) |
-| `UNIQUE(roll_number)`, `UNIQUE(email)` | the DB itself refuses duplicates, even if two requests race |
-| `student_files.student_id ON DELETE CASCADE` | deleting a student removes their metadata rows automatically |
-| `students.course_id ON DELETE RESTRICT` | a course with students cannot be deleted by accident |
-| `users.student_id ON DELETE CASCADE` + `CHECK` | a student login exists only for role `student` and disappears with the student |
-| `uploaded_by ON DELETE SET NULL` | removing an admin account keeps the files |
-| Index `(student_id, category, uploaded_at)` | the "latest profile photo" and "files of a student" queries use it |
-| `DATETIME` (not `TIMESTAMP`) | PHP and Java read the same value without time-zone conversion |
-
-Cascades remove **rows**. Physical files are removed by PHP code (`StudentService::deleteStudent`), which deletes only paths that belong to that student.
-
-## 2. Shared configuration (`.env`)
-One file is read by both modules:
-- PHP: [`php-admin/config/config.php`](../php-admin/config/config.php) parses `KEY=VALUE` lines; real environment variables take precedence.
-- Java: [`AppConfig.java`](../java-servlet/src/main/java/edu/webtech/portal/util/AppConfig.java) loads it with `java.util.Properties` (same syntax). Tomcat finds it through `SMP_CONFIG` (set in `tomcat/bin/setenv.bat`).
-- `STORAGE_DIR=storage/uploads` is resolved relative to the `.env` folder, so both modules point at the **same** upload directory.
+This document explains the important files in simple language. Every source file also contains inline comments that explain the code at the point where it is written.
 
 ---
 
-## 3. Question 1: Registration form
+## 1. HTML form – `Question1_Frontend/register.html`
 
-| File | Role |
-|---|---|
-| `frontend/register.html` | Semantic form: `<form method="post" enctype="multipart/form-data" novalidate>`, `fieldset/legend`, labels, `required`, `pattern`, `maxlength`, `accept`, `autocomplete`, `aria-describedby` |
-| `frontend/css/style.css` | Design tokens in `:root`, grid/flex layout, input states (`:focus`, `[aria-invalid=true]`), strength meter, responsive breakpoints at 960 px and 600 px, reduced-motion support |
-| `frontend/js/validation.js` | **Part A**: pure functions (`validateName`, `validateEmail`, `assessPassword`, `validateFile`, `detectSignature`...) exported for Node tests. **Part B**: DOM wiring |
+- A normal `<form>` with `method="post"`, `enctype="multipart/form-data"` (needed to send files) and `action="../Question2_PHP/register.php"`.
+- Fields: **full name, roll number, email, mobile (optional), course (`<select>`), password, confirm password, profile photo (`<input type="file">`), ID proof (optional file)** and a declaration checkbox.
+- Every input has a `<label for="…">` (accessibility) and an empty `<small class="error-message" id="FIELD-error">` where JavaScript writes the error.
+- The form has the **`novalidate`** attribute: this switches off the browser's built-in HTML5 bubbles so that *our own JavaScript* does all validation and shows consistent messages.
+- `accept=".jpg,.jpeg,.png,.webp"` only filters the file-chooser dialog; real checking is done in JS and again in PHP.
+- `Question1_Frontend/index.html` is a landing page that links the three modules.
 
-**Why `novalidate`?** The browser's own validation bubbles look different in each browser and are hard to make accessible. With `novalidate`, JavaScript shows consistent messages next to each field and in a summary at the top. The HTML attributes stay in place as documentation and as a fallback.
+**Viva question:** *Why `multipart/form-data`?* – Because the default encoding (`application/x-www-form-urlencoded`) cannot carry binary file contents.
 
-**Password strength** (`assessPassword`): five checks (length ≥ 8, upper, lower, digit, symbol), plus one point for length ≥ 12. Score → level 1–4 (*Weak, Fair, Good, Strong*) drives the coloured bar and the ✓ checklist. A password is *valid* only when all five checks pass, it is not in a small common-password list, and it does not contain the roll number.
+## 2. CSS – `Question1_Frontend/css/style.css` (and `admin.css`, `servlet.css`)
 
-**File checks** (`validateFile` + `detectSignature`): extension allow-list, declared MIME, empty/oversize, unsafe double extensions (`x.php.jpg`), and then the **first 12 bytes are read with `File.slice().arrayBuffer()`** and compared with the JPEG/PNG/WebP/PDF signatures. A text file renamed `.jpg` is therefore caught in the browser.
+- **Design tokens:** colours, radius and shadow are CSS custom properties in `:root` (`--primary`, `--danger`…). Changing one value re-themes the whole site.
+- **Layout:** CSS Grid. The page is two columns (`grid-template-columns: 300px 1fr`) and the form itself is a two-column grid (`.form-grid`).
+- **Styled inputs/buttons:** rounded borders, focus ring (`box-shadow` on `:focus`), primary/secondary buttons with hover states.
+- **Error UI:** `.is-invalid` gives a red border and pink background, `.is-valid` a green border; `.error-message` is red text under the field; `.alert-error` is the summary box.
+- **Password meter:** `.strength-bar` width and colour are changed by JavaScript; the checklist uses `::before` to show ✓ / ✕.
+- **Responsive:** `@media (max-width: 900px)` stacks the columns, `@media (max-width: 640px)` makes the form one column and the buttons full width. The same palette is reused in the admin panel and the servlet portal for a consistent look.
 
-**Submission**: the page fetches a single-use token from `api/registration-token.php`, then posts with `fetch()`. An `isSubmitting` flag plus the disabled button prevent double submits. The server returns JSON; field errors from the server are shown next to the fields, the same way client errors are.
+## 3. JavaScript validation – `Question1_Frontend/js/validation.js`
 
-## 4. Question 2: PHP admin module
+- Wrapped in an IIFE `(function () { 'use strict'; … })();` so no variables leak into the global scope.
+- `validators` is an object with **one function per field**; each returns an error message or `""`:
+  - *name* – required, 3–100 chars, regex `/^[A-Za-z][A-Za-z .']*$/`
+  - *roll number* – required, `/^[A-Za-z0-9]{5,15}$/` (converted to upper case while typing)
+  - *email* – required + regex for `name@domain.tld`
+  - *course* – a value must be selected
+  - *password* – required and must pass 5 rules: length ≥ 8, upper case, lower case, digit, special character
+  - *confirm password* – must equal the password
+  - *files* – extension whitelist, browser MIME type, not empty, max 2 MB (photo) / 5 MB (ID proof)
+- `validateField(id)` runs the validator, writes the message into the error element (`textContent`, never `innerHTML`, so no HTML injection), toggles `is-invalid` / `is-valid` and sets `aria-invalid`.
+- **Events:** `blur` validates when the user leaves a field; `input`/`change` re-validate live after the field was touched; the password `input` event also updates the **strength meter**.
+- **Submit:** all fields are validated; if any fails we call **`event.preventDefault()`** – the form is not sent – show an error summary listing all problems and focus the first wrong field. If everything is valid the form is submitted to PHP (or, when opened from disk, a success message is shown).
+- **Reset:** clears every message and colour after the browser resets the values.
 
-### Request lifecycle
-Every page starts with `require __DIR__ . '/../includes/bootstrap.php';`, which:
-1. loads the classes and the configuration;
-2. turns off `display_errors` and logs to `storage/logs/php-error.log`;
-3. installs an exception handler: known `AppException`s show their safe message, anything else shows a generic one (no stack traces);
-4. sends security headers (CSP, `nosniff`, `X-Frame-Options`, `Referrer-Policy`) and removes `X-Powered-By`;
-5. starts the session (`Session::start`).
+## 4. PHP database connection – `Question2_PHP/config/database.php`
 
-Protected pages then call `Auth::requireAdmin()`.
+- Constants for host, database, user, password (with optional environment-variable overrides), upload folder and size limits, the allowed course list and document labels.
+- `db()` creates **one PDO object** (stored in a `static` variable so the connection is reused):
+  - `PDO::ERRMODE_EXCEPTION` – SQL errors throw `PDOException`, which we catch
+  - `PDO::ATTR_EMULATE_PREPARES => false` – real prepared statements on the MySQL server
+  - `charset=utf8mb4` – full Unicode
+- If the connection fails, the real reason goes to the PHP error log and the user sees a friendly "Database connection failed" page (`render_error_page()`), never a stack trace.
 
-### Key classes (`php-admin/includes/`)
-| File | Responsibility |
-|---|---|
-| `Database.php` | PDO connection (`ERRMODE_EXCEPTION`, `EMULATE_PREPARES=false`, utf8mb4), `transaction()` helper, duplicate-key detection (error 1062) |
-| `Session.php` | cookie name `SMP_ADMIN_SESSION`, `HttpOnly`, `SameSite=Lax`, strict mode, cookie path limited to `public/`, idle timeout via `last_activity` |
-| `Auth.php` | `attempt()` (bcrypt `password_verify`, dummy hash for unknown users, random delay on failure, rehash on cost change), `login()` (`session_regenerate_id(true)`, new CSRF token), `requireAdmin()` (re-checks role/active in the DB on every request) |
-| `Csrf.php` | per-session token (`random_bytes(32)`), `hash_equals` check, detects `post_max_size` overflow, single-use registration token with 1 h lifetime |
-| `Validator.php` | `StudentValidator` (normalises: trims, upper-cases roll, lower-cases email; Unicode-aware name regex) and `PasswordPolicy` (same rules as the JS) |
-| `FileStorage.php` | upload validation, safe storage, safe path resolution (details below) |
-| `Repositories.php` | all SQL: `CourseRepository`, `StudentRepository` (search with escaped `LIKE`, whitelisted `ORDER BY`, pagination), `FileRepository`, `UserRepository` |
-| `StudentService.php` | business rules combining DB + files in transactions (create/update/addFile/deleteFile/deleteStudent) |
-| `helpers.php` | `e()` (escaping), `url()`/`redirect()` (303 Post/Redirect/Get), flash messages, `input_id()` (strict positive integer), formatting |
-| `views/` | `layout_start.php`/`layout_end.php` (sidebar + top bar + confirm `<dialog>`), `student_form.php` (shared add/edit form), `error.php` |
+## 5. PHP CRUD
 
-### Pages (`php-admin/public/`)
-| Page | Method | Purpose |
+| Operation | File | Key SQL (always prepared) |
 |---|---|---|
-| `login.php` / `logout.php` | GET/POST, POST only | sign in / sign out (CSRF on both) |
-| `dashboard.php` | GET | stats, students per course (CSS bars), recent students and uploads |
-| `students.php` | GET | **list**: search, course filter, sort, pagination; avatars from `file.php` |
-| `student_create.php` | GET/POST | **add**: validates fields + files, then `StudentService::create` |
-| `student_view.php` | GET | **view**: details, documents (view/download/delete), image gallery, upload form; flags missing files |
-| `student_edit.php` | GET/POST | **edit**: fields + optional replacement photo |
-| `student_delete.php` | GET/POST | **delete**: GET shows a confirm page (no-JS fallback), POST deletes |
-| `file_upload.php` / `file_delete.php` | POST | add / remove one file |
-| `file.php` | GET | streams a file to an authenticated admin |
-| `register.php` | POST | public endpoint for the Q1 form |
-| `api/registration-token.php` | GET | issues the single-use registration token |
+| **Create** | `add_student.php` → `create_student_with_files()` | `INSERT INTO students (...) VALUES (:name, :roll, ...)` |
+| **Read (list)** | `dashboard.php` | `SELECT ... FROM students s WHERE (s.name LIKE :q1 ...) AND s.course = :course` |
+| **Read (one)** | `view_student.php` | `SELECT * FROM students WHERE id = :id` + `SELECT ... FROM student_files WHERE student_id = :sid` |
+| **Update** | `edit_student.php` | `UPDATE students SET name = :name, ... WHERE id = :id` |
+| **Delete** | `delete_student.php` | `DELETE FROM students WHERE id = :id` |
 
-### Upload flow (the core of Q2)
-```
-browser ──multipart POST──▶ student_create.php / file_upload.php / register.php
-   1. Csrf::requireValid()                       (token, and post_max_size overflow check)
-   2. StudentValidator::validate($_POST)         (text fields)
-   3. FileStorage::validate($_FILES[x], category)
-        - PHP error code → friendly message (INI_SIZE, FORM_SIZE, PARTIAL, NO_FILE ...)
-        - is_uploaded_file()                     (tmp_name really came from this upload)
-        - size > 0 and ≤ 2 MB (photo) / 5 MB (document)
-        - finfo(FILEINFO_MIME_TYPE) on the BYTES → must be in the allow-list
-        - images: getimagesize() must decode, MIME must match, ≤ 40 MP
-        - PDFs: must start with "%PDF-"
-        - reject content containing "<?php" or "<script"
-        - extension chosen from the detected MIME (jpg/png/webp/pdf)
-        - original name cleaned (basename, no control chars) - display only
-   4. Database::transaction:
-        INSERT students → FileStorage::store() → INSERT student_files
-        store(): mkdir students/<id>/<category>/, name = bin2hex(random_bytes(16)).ext,
-                 move_uploaded_file(), chmod 0640
-   5. on any failure: ROLLBACK + delete already-moved files (no orphans)
-   6. 303 redirect → student_view.php?id=<id>   (Post/Redirect/Get)
-```
+Common flow of a form page: `require_login()` → on POST check the **CSRF token** → `validate_student_data()` (server-side validation of every field, same rules as JS) → `add_duplicate_errors()` (roll number / email must be unique) → run the prepared statement → `set_flash()` success message → **redirect** (Post/Redirect/Get, so refreshing does not resubmit). On errors the form is shown again with the typed values and a message under each wrong field (shared markup in `includes/student_form.php`).
 
-### Download flow (`file.php`)
-`Auth::requireAdmin()` → `input_id()` → `FileRepository::find(id)` → `FileStorage::resolve(relative_path, student_id)`, which checks:
-1. the regex `^students/<id>/<category>/<32 hex>.<jpg|png|webp|pdf>$`;
-2. that the `<id>` in the path equals the record's `student_id`;
-3. that `realpath()` stays inside the storage root.
+Delete uses a **confirmation page** (GET) and only deletes on POST. `ON DELETE CASCADE` removes the file metadata rows, then PHP removes the physical files with `delete_physical_file()`.
 
-The script then sends `Content-Type` (from the allow-list), `Content-Length`, `Content-Disposition` (ASCII fallback plus RFC 5987 `filename*`), `nosniff` and `Cache-Control: private, no-store`, followed by `readfile()`. The session lock is released first (`session_write_close`) so thumbnails load in parallel.
+Other helpers: `includes/auth.php` (session + `require_login()`), `includes/functions.php` (`e()` escaping, CSRF, flash messages, validation), `includes/header.php` / `footer.php` (layout).
 
-### Safe delete
-`StudentService::deleteStudent($id)` loads the student's file list, deletes the row (cascades), then calls `FileStorage::delete($path, $id)` for each file. `delete()` refuses any path whose `students/<id>/` part is not this student, so another student's files can never be removed. Finally the empty folders are removed.
+## 6. File upload – `Question2_PHP/includes/upload_handler.php`, `upload_file.php`
 
-### Output escaping
-Every dynamic value in a template is printed as `<?= e($value) ?>`. The only unescaped output is static SVG icon markup written by the developer.
+`validate_upload($file, $category)` checks, in order:
 
-## 5. Question 3: Java Servlet module
+1. `$_FILES['file']['error']` is `UPLOAD_ERR_OK` (otherwise a readable message from `upload_error_message()`)
+2. `is_uploaded_file()` – the temp file really came from an HTTP upload
+3. size > 0 and ≤ **2 MB** (photo) / **5 MB** (document)
+4. extension in the whitelist: photo = jpg, jpeg, png, webp; document = pdf, jpg, jpeg, png
+5. no dangerous extension anywhere in the name (`shell.php.jpg` is rejected)
+6. the **real MIME type** read from the file bytes with `finfo` must match the extension (a text file renamed to `.jpg` is rejected)
+7. images must load with `getimagesize()`
 
-### Package layout (`java-servlet/src/main/java/edu/webtech/portal/`)
-| Package / class | Responsibility |
+`store_upload()` then:
+
+- generates a **random stored name** `bin2hex(random_bytes(16)) . '.' . $ext` (and loops if it somehow exists) – so two uploads named `id-proof.pdf` never overwrite each other and the original filename is never trusted
+- moves the file with `move_uploaded_file()` into `uploads/profiles/` or `uploads/documents/`
+- inserts the metadata row; if the insert fails, the file is deleted again
+
+`upload_file.php` (POST only) ties this together and, for a new profile photo, removes the previous photo (`remove_old_profile_photos()`). `delete_file.php` deletes one file (row + disk).
+
+**Uploaded files are never executed:** `uploads/.htaccess` contains `Require all denied` and turns the PHP engine off. Files are delivered by `view_file.php`, which checks the login, looks the file up by numeric id, resolves the path safely and sends it with a whitelisted `Content-Type`, `X-Content-Type-Options: nosniff` and `Content-Disposition: inline` (view) or `attachment` (download).
+
+## 7. File metadata
+
+Each upload creates one row in **`student_files`**:
+
+| Column | Meaning |
 |---|---|
-| `listener.AppContextListener` (`@WebListener`) | on start-up: `AppConfig.locate()` → `DatabaseUtil.init()` → stores `StoragePaths` in the `ServletContext`; on shutdown: deregisters the JDBC driver (prevents memory leaks on redeploy) |
-| `util.AppConfig` | reads `.env`, builds the JDBC URL, resolves `STORAGE_DIR` |
-| `util.DatabaseUtil` | `DriverManager.getConnection(url, user, pass)`; turns `SQLException` into `DataAccessException` with a safe message |
-| `util.PasswordUtil` | verifies PHP's bcrypt hashes with jBCrypt (`$2y$` → `$2a$`), constant work for unknown users |
-| `util.StoragePaths` | the Java twin of `FileStorage::resolve()`: regex + owner check + `toRealPath()` containment |
-| `util.WebUtil` | `parseId()` (strict), CSRF token create/verify (`SecureRandom`, `MessageDigest.isEqual`), `contentDisposition()`, `sendError()` |
-| `model.Student`, `StudentFile`, `User` | JavaBeans used by the JSPs (getters such as `getDocuments()`, `getImages()`, `isPdf()`, `getSizeDisplay()`) |
-| `dao.StudentDao` | `findPage(search, page, size)`, `count()`, `findById()`; one SQL with a sub-query for the latest photo id |
-| `dao.StudentFileDao` | `findByStudentId()`, `findByStudentIds()` (one `IN (?,?,…)` query for a whole page), `findById()`, `findLatestPhoto()` |
-| `dao.UserDao` | `findByUsername()`, `findById()`, `updateLastLogin()` |
-| `filter.SecurityHeadersFilter` | UTF-8 request decoding; `nosniff`, `X-Frame-Options`, CSP, `Cache-Control: no-store` |
-| `filter.AuthFilter` | guards `/*`: allows `/login` and `/assets/*`; otherwise requires `authUser` in the session; pages → redirect, files → 401; re-checks the account in the DB |
-| `servlet.LoginServlet` (`/login`) | CSRF check, `UserDao` + `PasswordUtil`, `request.changeSessionId()`, stores a password-free `User`, sets the idle timeout from `.env`, safe `next` redirect |
-| `servlet.LogoutServlet` (`/logout`) | POST + CSRF → `session.invalidate()` |
-| `servlet.StudentListServlet` (`/students`) | search + pagination, attaches files to each student, forwards to `students.jsp`; students are redirected to their own profile |
-| `servlet.StudentProfileServlet` (`/student?id=`) | 400 invalid id, 403 not allowed, 404 not found, marks missing files, forwards to `student-profile.jsp` |
-| `servlet.FileServlet` (`/file?id=`, `/photo?student=`) | streams files (details below) |
+| `student_id` | owner (foreign key to `students.id`) |
+| `file_category` | `profile` or `document` |
+| `document_label` | ID Proof / Certificate / Mark Sheet / Other |
+| `original_name` | name on the user's PC – display only |
+| `stored_name` | random name on disk (UNIQUE) |
+| `file_path` | path relative to `Question2_PHP`, e.g. `uploads/documents/3f9c…e1.pdf` |
+| `file_type` | MIME type detected from content |
+| `file_size` | bytes |
+| `upload_date` | `TIMESTAMP DEFAULT CURRENT_TIMESTAMP` |
 
-Filters are declared in `web.xml` so their **order** is fixed: headers first, then authentication. Servlets use `@WebServlet` annotations.
+`view_student.php` reads these rows to show the photo, a preview, type badge, size, upload date and the View/Download/Delete buttons.
 
-### JDBC pattern used everywhere
-```java
-String sql = "SELECT ... FROM student_files WHERE student_id = ?";
-try (Connection con = DatabaseUtil.getConnection();
-     PreparedStatement ps = con.prepareStatement(sql)) {
-    ps.setLong(1, studentId);                 // value bound, never concatenated
-    try (ResultSet rs = ps.executeQuery()) { ... map rows to StudentFile ... }
-} catch (SQLException e) {
-    throw new DataAccessException("safe message", e);   // servlet → 503 page
-}
-```
-`try-with-resources` closes the result set, statement and connection even if an exception occurs.
+## 8. MySQL schema – `database/schema.sql`
 
-### JSP: loops and conditions (`WEB-INF/views/students.jsp`)
-```jsp
-<c:forEach var="s" items="${students}">                      <%-- loop over students --%>
-  <c:choose>
-    <c:when test="${s.photoFileId != null}">
-      <img src="${ctx}/photo?student=${s.id}" alt="...">      <%-- image served by FileServlet --%>
-    </c:when>
-    <c:otherwise><span class="avatar">${initials}</span></c:otherwise>
-  </c:choose>
-  <c:choose>                                                    <%-- 0 / 1 / many files --%>
-    <c:when test="${s.fileCount == 0}">No files uploaded yet</c:when>
-    <c:when test="${s.fileCount == 1}">1 file</c:when>
-    <c:otherwise>${s.fileCount} files</c:otherwise>
-  </c:choose>
-  <c:forEach var="f" items="${s.files}" varStatus="loop">    <%-- nested loop over files --%>
-    <c:if test="${loop.index < 3}"> ...chip linking to /file?id=${f.id}... </c:if>
-  </c:forEach>
-</c:forEach>
-```
-Text is printed with `<c:out>` (HTML-escaped). Values inside attributes use `fn:escapeXml`. JSPs live in `WEB-INF/views`, so they cannot be requested directly, only through a servlet forward.
+- `CREATE DATABASE IF NOT EXISTS student_portal` with `utf8mb4`.
+- `users` – `username` UNIQUE, bcrypt `password_hash`.
+- `students` – `roll_number` UNIQUE, `email` UNIQUE, `created_at`/`updated_at` timestamps, indexes on `course` and `name`.
+- `student_files` – foreign key `fk_files_student` with **`ON DELETE CASCADE`**, `CHECK` constraints on category and size, UNIQUE `stored_name`.
+- Inserts 2 demo users (`admin`, `faculty`) and 6 sample students. Passwords are bcrypt hashes generated by PHP's `password_hash()` – never plain text.
 
-### Streaming logic (`FileServlet`)
-1. `parseId()`: only `[1-9][0-9]{0,9}` is accepted, otherwise 400.
-2. Load metadata: `findById()` or `findLatestPhoto()`; none → 404.
-3. Authorisation: `user.canView(file.studentId)`; a student viewing someone else's file → 403.
-4. `StoragePaths.resolve(relativePath, studentId)`: missing or unsafe → 404 "file missing".
-5. Headers: `setContentType` (allow-list, otherwise `application/octet-stream` + attachment), `setContentLengthLong(Files.size)`, `Content-Disposition` (`inline`, or `attachment` when `download=1`), `nosniff`, `Cache-Control: private, no-store`.
-6. Body: `Files.copy(path, response.getOutputStream())` streams in chunks without loading the file into memory.
+## 9. JDBC connection – `Question3_Servlet/.../dao/DBConnection.java`
 
-The URL contains **only a number**; the file path always comes from the database. That is why `../` attacks have nothing to work with.
+- A static block loads `db.properties` from the classpath (`WEB-INF/classes`) once and loads the driver with `Class.forName("com.mysql.cj.jdbc.Driver")`.
+- `getConnection()` returns `DriverManager.getConnection(url, user, password)`. Every DAO method opens the connection in a **try-with-resources** block so it is always closed, even when an exception occurs.
+- `getUploadBaseDir()` returns the Question2_PHP folder so the servlet can find the uploaded files.
+- Each setting can be overridden by an environment variable (`SP_DB_PASSWORD` etc.).
 
-### Session handling (Java)
-- `web.xml`: cookie `SMP_PORTAL_SESSION`, `http-only`, tracking mode `COOKIE` (no `;jsessionid` in URLs), default timeout 30 min.
-- Login: `changeSessionId()` (defeats session fixation), `setMaxInactiveInterval(SESSION_TIMEOUT_MINUTES*60)`, new CSRF token.
-- Every request: `AuthFilter` checks `authUser`. If the browser sent a session id that is no longer valid, the filter redirects to `/login?expired=1`.
-- Logout: POST with CSRF → `session.invalidate()`; the old cookie becomes useless (verified by test).
+## 10. DAO pattern – `StudentDAO`, `FileDAO`, `UserDAO`
 
-## 6. PHP vs Java authentication
-They are **separate applications with separate sessions**, sharing only the `users` table:
-- PHP hashes with `password_hash(PASSWORD_BCRYPT, cost 12)` → `$2y$12$…`
-- Java verifies the same string with jBCrypt after mapping `$2y$` to `$2a$` (identical algorithm).
-- Signing in to one does **not** sign you in to the other. Each protects its own endpoints (`Auth::requireAdmin`, `AuthFilter`).
+**DAO (Data Access Object)** = a class that contains *all* SQL for one table. Servlets call simple methods (`findAll`, `findById`, `findByStudentId`, `authenticate`) and never write SQL themselves. Benefits: separation of concerns, reuse, easier testing.
 
-## 7. Tests and tools
-| File | Purpose |
+- Every query uses **`PreparedStatement`** with `?` placeholders and `setString/setInt` – user input is never concatenated into SQL.
+- `StudentDAO.findAll(search, course)` builds an optional `WHERE` with `LIKE ?` and returns `List<Student>`. Sub-queries add the current profile-photo id and file counts.
+- `mapRow(ResultSet)` copies one row into a model object; `rs.wasNull()` converts SQL `NULL` into Java `null`.
+- `UserDAO.authenticate()` loads the bcrypt hash and checks it with `BCrypt.checkpw()`. PHP writes `$2y$` hashes; jBCrypt expects `$2a$` – the algorithm is identical, so only the prefix is swapped.
+- **Models** (`Student`, `StudentFile`, `User`) are JavaBeans with getters used by JSP EL, plus helpers like `getInitials()`, `isImage()`, `isPdf()`, `getFormattedSize()`.
+
+## 11. Servlets (`controller` package, mapped in `WEB-INF/web.xml`)
+
+| Servlet | URL | What it does |
+|---|---|---|
+| `LoginServlet` | `/login` | GET shows the form; POST validates input, calls `UserDAO.authenticate()`, invalidates any old session, creates a new `HttpSession`, stores the `User`, sets a 30-min timeout, redirects to `/students` |
+| `LogoutServlet` | `/logout` | `request.getSession(false)` → `invalidate()` → redirect to login |
+| `StudentListServlet` | `/students` | session check → read `q` and `course` → `StudentDAO.findAll()` → `request.setAttribute("students", list)` → **forward** to `students.jsp` |
+| `StudentProfileServlet` | `/student?id=N` | session check → validate id (400 if invalid) → `findById` (404 if missing) → `FileDAO.findByStudentId` → forward to `student-profile.jsp` |
+| `FileDownloadServlet` | `/file?id=N[&download=true]` | session check → load metadata → safe path → stream bytes |
+
+`web.xml` also defines the welcome file, session config (30 min, HttpOnly cookie, cookie-only tracking), UTF-8 for JSPs, a default JSTL locale and **error pages** that map 400/403/404/405/500 and exceptions to `error.jsp`.
+
+**forward vs redirect:** *forward* keeps the same request (attributes reach the JSP, URL does not change); *redirect* tells the browser to make a new request (used after login/logout – Post/Redirect/Get).
+
+## 12. JSP dynamic rendering – `students.jsp`, `student-profile.jsp`
+
+- JSPs are in **`WEB-INF/views`**, so they can only be reached through a servlet `forward` (which already checked the session).
+- **JSTL core** tags:
+  - `<c:forEach items="${students}" var="s">` – **loop** over all students (cards) and `<c:forEach items="${files}" var="f">` – loop over all files of a student.
+  - `<c:choose>/<c:when>/<c:otherwise>` – **conditional rendering**: show the photo if the student has one, otherwise the initials; show an `<img>` preview for image files, a "PDF" icon for PDFs; "No files uploaded" when the count is 0.
+  - `<c:if>` – optional messages and chips.
+  - `<c:out>` – prints values with HTML escaping (XSS protection).
+- **EL** (`${student.name}`) calls the getters of the model objects.
+- **`<img src="${ctx}/file?id=${s.profilePhotoId}">`** – the image tag points to the **FileDownloadServlet**, not to a real file path.
+- `fmt:formatDate` formats dates; `fn:length` and `fn:escapeXml` come from the JSTL functions library.
+- `fragments/header.jspf` / `footer.jspf` are included with `<%@ include %>` to avoid repeating the layout.
+
+## 13. File streaming – `FileDownloadServlet.java`
+
+1. `SessionUtil.redirectIfNotLoggedIn()` – no session → redirect to `/login`.
+2. Parse the id (`\d{1,9}`, > 0) – otherwise **400**.
+3. `FileDAO.findById(id)` – not found → **404**.
+4. Resolve the path: `base = upload.base.dir.toRealPath()`, `uploads = base/uploads`, `candidate = base.resolve(file_path).normalize()`. The file is served **only if `candidate.startsWith(uploads)`** and it is a regular file (also re-checked after `toRealPath()` to defeat symbolic links). A tampered path such as `uploads/../../Windows/win.ini` gives 404.
+5. Headers: `Content-Type` (only image/jpeg, image/png, image/webp, application/pdf – anything else becomes `application/octet-stream`), `Content-Length`, `Content-Disposition: inline` (show in browser) or `attachment` (`&download=true`), `X-Content-Type-Options: nosniff`.
+6. Copy the file to `response.getOutputStream()` (**`ServletOutputStream`**) with an 8 KB buffer in a `while (read != -1)` loop inside try-with-resources.
+
+The browser therefore only ever sees `file?id=7`, never `C:\…\uploads\…`.
+
+## 14. Session management
+
+**PHP (`includes/auth.php`):**
+- `session_set_cookie_params(['httponly' => true, 'samesite' => 'Lax'])` then `session_start()`.
+- Login stores `$_SESSION['admin_id']`; `session_regenerate_id(true)` gives a new id after login (prevents session fixation).
+- `require_login()` at the top of every protected page redirects to `login.php`.
+- 30 minutes of inactivity (`last_activity`) ends the session.
+- Logout (POST + CSRF) clears `$_SESSION`, deletes the cookie, `session_destroy()`.
+
+**Java (`SessionUtil`, `LoginServlet`, `LogoutServlet`):**
+- Protected servlets call `request.getSession(false)` – it **returns the existing session or `null` and never creates one**. No session or no `loggedInUser` attribute → redirect to `/login?msg=login_required`.
+- On login the old session is invalidated and a new one created; `setMaxInactiveInterval(1800)`.
+- Protected responses send `Cache-Control: no-store` so the Back button cannot show data after logout.
+- `web.xml` makes the `JSESSIONID` cookie HttpOnly and disables URL rewriting.
+
+## 15. Security validation (summary)
+
+| Threat | Defence |
 |---|---|
-| `frontend/tests/validation.test.js` | Node unit tests for the JS validators |
-| `php-admin/tests/run_tests.php` | PHP unit + live-DB integration tests |
-| `java-servlet/src/test/java/...` | JUnit 5: security utils, models, DAO integration |
-| `tests/e2e_test.py` | HTTP tests across Apache, Tomcat and MySQL |
-| `tests/capture_screenshots.py` | real-browser checks + screenshots (Playwright + installed Chrome) |
-| `tests/generate_fixtures.py` | creates the synthetic demo files and malicious test files |
-| `php-admin/bin/*.php` | CLI: create/delete user, seed demo files |
-| `java-servlet/deploy-tomcat.bat` | build + deploy WAR, configure `SMP_CONFIG` |
+| SQL injection | prepared statements in PHP (PDO) and Java (PreparedStatement) |
+| XSS | `htmlspecialchars` (`e()`), `<c:out>`, `fn:escapeXml`, `textContent` |
+| Weak/stolen passwords | password strength rules (JS + PHP), bcrypt hashing, generic login error |
+| CSRF | per-session token in all PHP POST forms, `hash_equals` |
+| Malicious uploads | whitelist + MIME sniffing + size limit + random names + no-execute folder |
+| Path traversal | `realpath`/`toRealPath` + "must stay inside uploads/" check |
+| Unauthorised access | `require_login()`, `getSession(false)` checks, JSPs inside WEB-INF, `.htaccess` deny rules |
+| Information leakage | friendly error pages; technical details only in server logs |
+| Tampered form values | course and document type checked against whitelists; ids validated as positive integers |

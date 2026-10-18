@@ -1,0 +1,7 @@
+<%-- fragments/footer.jspf – closes <main> and the page. --%>
+</main>
+<footer class="footer">
+    <div class="container">U21CS501 Web Technology · Assignment II · Servlet, JSP &amp; JDBC Portal<br>Developed by <strong>Mithuna Kamalanathan</strong> · B.E CSE</div>
+</footer>
+</body>
+</html>

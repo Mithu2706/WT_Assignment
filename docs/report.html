@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<!--
+    docs/report.html – source of the final submission report.
+    To regenerate the PDF: open this file in Chrome → Ctrl+P → Destination "Save as PDF",
+    Paper A4, Margins "Default", tick "Background graphics" → Save as
+    Mithuna_Kamalanathan_24CS117_Web_Technology_Assignment_II_FINAL.pdf in the project root.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mithuna Kamalanathan – Web Technology Assignment II</title>
+<style>
+    @page { size: A4; margin: 18mm 18mm 20mm 18mm; }
+    * { box-sizing: border-box; }
+    body { font-family: "Times New Roman", Georgia, serif; font-size: 12pt; line-height: 1.5; color: #111; margin: 0; }
+    h1, h2, h3 { font-family: "Times New Roman", Georgia, serif; color: #111; }
+    h2 { font-size: 17pt; margin: 0 0 10px; padding-bottom: 4px; border-bottom: 2px solid #1e1b4b; }
+    h3 { font-size: 13pt; margin: 16px 0 6px; }
+    p { margin: 0 0 8px; text-align: justify; }
+    ul, ol { margin: 0 0 8px; padding-left: 22px; }
+    li { margin-bottom: 3px; }
+    .page-break { page-break-before: always; }
+    .avoid { page-break-inside: avoid; }
+
+    /* Cover page */
+    .cover { height: 255mm; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; padding: 18mm 0 10mm; }
+    .cover .college { font-size: 20pt; font-weight: bold; letter-spacing: 0.5px; }
+    .cover .dept { font-size: 13pt; margin-top: 4px; }
+    .cover .title { font-size: 19pt; font-weight: bold; margin-top: 6px; }
+    .cover .code { font-size: 12pt; margin-top: 4px; }
+    .cover .label { font-size: 11pt; font-style: italic; color: #444; }
+    .cover .project { font-size: 16pt; font-weight: bold; margin-top: 4px; }
+    .cover .name { font-size: 16pt; font-weight: bold; margin-top: 6px; }
+    .cover table { margin: 0 auto; border-collapse: collapse; font-size: 11.5pt; }
+    .cover td { padding: 3px 12px; text-align: left; border: none; }
+    .cover td:first-child { font-weight: bold; text-align: right; }
+    .rule { width: 60%; border-top: 1px solid #999; margin: 0 auto; }
+
+    /* Tables */
+    table.grid { width: 100%; border-collapse: collapse; margin: 6px 0 12px; font-size: 10.5pt; }
+    table.grid th, table.grid td { border: 1px solid #999; padding: 5px 7px; vertical-align: top; text-align: left; }
+    table.grid th { background: #eef0f6; }
+
+    /* Code */
+    pre { font-family: Consolas, "Courier New", monospace; font-size: 8.6pt; line-height: 1.35; background: #f6f7fb; border: 1px solid #d9dce6;
+          border-left: 4px solid #4f46e5; padding: 8px 10px; margin: 6px 0 12px; white-space: pre-wrap; word-break: break-word; page-break-inside: avoid; }
+    code { font-family: Consolas, "Courier New", monospace; font-size: 10pt; background: #f1f2f7; padding: 0 3px; }
+    .file { font-family: Consolas, monospace; font-size: 9pt; color: #4338ca; margin-bottom: -2px; }
+
+    /* Figures */
+    figure { margin: 10px 0 14px; text-align: center; page-break-inside: avoid; }
+    figure img { max-width: 100%; max-height: 205mm; border: 1px solid #888; }
+    figure img.half { max-height: 120mm; }
+    figure img.mobile { max-height: 150mm; }
+    figcaption { font-size: 10pt; font-style: italic; margin-top: 4px; color: #333; }
+    .two { display: flex; gap: 10px; align-items: flex-start; justify-content: center; }
+    .two figure { flex: 1; margin: 6px 0 12px; }
+
+    .box { border: 1px solid #c7c9d9; background: #fafaff; padding: 8px 12px; margin: 8px 0 12px; }
+    .result { border-left: 4px solid #16a34a; background: #f3fbf5; padding: 6px 10px; margin: 8px 0 12px; }
+    .toc td { padding: 0 8px; border: none; line-height: 1.45; }
+    .crop { overflow: hidden; border: 1px solid #888; }
+    .crop img { border: none; max-height: none; width: 100%; display: block; }
+    table.compact th, table.compact td { padding: 3px 6px; font-size: 10pt; }
+    table.compact td:first-child { white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!-- ============================ COVER PAGE ============================ -->
+<section class="cover">
+    <div>
+        <div class="college">KPR INSTITUTE OF ENGINEERING AND TECHNOLOGY</div>
+        <div class="dept">(Autonomous) · Coimbatore – 641 407</div>
+        <div class="dept">Department of Computer Science and Engineering</div>
+    </div>
+    <div>
+        <div class="title">WEB TECHNOLOGY – ASSIGNMENT II</div>
+        <div class="code">Course Code &amp; Title: U21CS501 – Web Technology</div>
+        <div class="code">Maximum Marks: 40</div>
+    </div>
+    <div>
+        <div class="label">Project Title</div>
+        <div class="project">Student Admission Portal with Profile &amp; Document Management</div>
+        <div class="code">HTML · CSS · JavaScript · PHP · MySQL · Java Servlet · JSP · JDBC</div>
+    </div>
+    <div>
+        <div class="label">Submitted by</div>
+        <div class="name">Mithuna Kamalanathan</div>
+        <table>
+            <tr><td>Roll Number</td><td>24CS117</td></tr>
+            <tr><td>Course</td><td>B.E Computer Science and Engineering</td></tr>
+            <tr><td>Year / Semester / Section</td><td>III / V / A</td></tr>
+        </table>
+    </div>
+    <div>
+        <div class="rule"></div>
+        <table style="margin-top:8px">
+            <tr><td>Academic Year</td><td>2026 – 2027</td></tr>
+            <tr><td>Issue Date</td><td>07.10.2026</td></tr>
+            <tr><td>Submission Date</td><td>20.10.2026</td></tr>
+        </table>
+    </div>
+</section>
+
+<!-- ============================ CONTENTS ============================ -->
+<section class="page-break">
+    <h2>Contents</h2>
+    <table class="toc">
+        <tr><td>1.</td><td>Project Overview and Architecture</td></tr>
+        <tr><td>2.</td><td>Question 1 – Student Registration Form (HTML, CSS, JavaScript) – 8 Marks</td></tr>
+        <tr><td>3.</td><td>Question 2 – PHP &amp; MySQL Admin Panel (CRUD and File Uploads) – 16 Marks</td></tr>
+        <tr><td>4.</td><td>Question 3 – Servlet, JSP &amp; JDBC Student Profile Portal – 16 Marks</td></tr>
+        <tr><td>5.</td><td>Database Schema</td></tr>
+        <tr><td>6.</td><td>Security Measures</td></tr>
+        <tr><td>7.</td><td>Testing Summary</td></tr>
+        <tr><td>8.</td><td>Conclusion</td></tr>
+        <tr><td>9.</td><td>GitHub Repository and Submission Files</td></tr>
+    </table>
+
+    <h2 style="margin-top:10px">1. Project Overview and Architecture</h2>
+    <p>All three questions are implemented as <b>one student admission portal</b> made of three separate modules that share a single MySQL database named <code>student_portal</code>:</p>
+    <table class="grid">
+        <tr><th>Module (folder)</th><th>Question</th><th>Technologies</th><th>Purpose</th></tr>
+        <tr><td><code>Question1_Frontend</code></td><td>Q1</td><td>HTML5, CSS3, JavaScript</td><td>Registration form with client-side validation</td></tr>
+        <tr><td><code>Question2_PHP</code></td><td>Q2</td><td>PHP 8 (PDO), MySQL</td><td>Admin panel: CRUD, file uploads, metadata</td></tr>
+        <tr><td><code>Question3_Servlet</code></td><td>Q3</td><td>Java Servlet, JSP + JSTL, JDBC, Tomcat</td><td>Session-protected portal that lists profiles and streams files</td></tr>
+        <tr><td><code>database</code></td><td>All</td><td>MySQL / MariaDB</td><td><code>schema.sql</code> – tables, constraints, demo data</td></tr>
+    </table>
+    <p><b>Flow:</b> a student fills in the registration form → JavaScript validates it → PHP saves it. The administrator logs in to the PHP panel to add, edit, view and delete students and to upload photos and documents. Each file is stored on disk under a random name and its metadata is stored in MySQL. Faculty log in to the Servlet portal, which reads the <i>same</i> database through JDBC and streams the <i>same</i> files through a Servlet.</p>
+    <pre>  Browser ─► Question1_Frontend (HTML/CSS/JS) ── valid form ─► Question2_PHP/register.php
+  Admin   ─► Question2_PHP  (Apache + PHP) ── PDO ──────────┐
+                │ saves files to uploads/profiles|documents  ▼
+                │                                    MySQL: student_portal
+                ▼                                    (users, students, student_files)
+  Faculty ─► Question3_Servlet (Tomcat) ── JDBC ────────────┘
+                └─ FileDownloadServlet reads the files from Question2_PHP/uploads</pre>
+    <p><b>Tools:</b> XAMPP 8.2.12 (Apache, PHP 8.2, MariaDB 10.4), Tomcat 8.5.96, JDK 24, Connector/J 8.4.0, JSTL 1.2.5, jBCrypt 0.4.</p>
+</section>
+
+<!-- ============================ QUESTION 1 ============================ -->
+<section class="page-break">
+    <h2>2. QUESTION 1 – Student Registration Form (8 Marks)</h2>
+    <h3>Aim</h3>
+    <p>To design a student admission registration form using HTML, style it with CSS (layout, colours, responsive design, styled inputs, buttons and error messages), and validate it on the client side using JavaScript (required fields, e-mail format and password strength).</p>
+
+    <h3>Implementation</h3>
+    <ul>
+        <li><b><code>register.html</code></b> – the form contains Full Name, Roll Number, Email, Mobile (optional), Course (drop-down), Password, Confirm Password, Profile Photo upload, ID-Proof upload (optional) and a declaration checkbox, with <i>Submit</i> and <i>Reset</i> buttons. It uses <code>enctype="multipart/form-data"</code> so files can be sent, and the <code>novalidate</code> attribute so that all validation is done by my own JavaScript.</li>
+        <li><b><code>css/style.css</code></b> – colours are defined once as CSS variables; CSS Grid gives a two-column page and a two-column form; inputs have rounded borders and a focus ring; buttons have hover states; invalid fields turn red with a message underneath and valid fields turn green. Media queries switch to a single column on tablets and phones.</li>
+        <li><b><code>js/validation.js</code></b> – one validator function per field. Fields are checked when the user leaves them and again while typing; a password-strength meter and checklist update on every key press. On submit, every field is validated and <code>event.preventDefault()</code> stops the form if anything is wrong.</li>
+    </ul>
+
+    <h3>Validation rules</h3>
+    <table class="grid">
+        <tr><th>Field</th><th>Rule checked in JavaScript</th></tr>
+        <tr><td>Name</td><td>Required, 3–100 characters, letters / spaces / dot / apostrophe only</td></tr>
+        <tr><td>Roll number</td><td>Required, 5–15 letters or digits, no spaces (converted to upper case)</td></tr>
+        <tr><td>Email</td><td>Required, must match <code>name@domain.tld</code></td></tr>
+        <tr><td>Course</td><td>A course must be selected</td></tr>
+        <tr><td>Password</td><td>Required; at least 8 characters with an upper-case letter, a lower-case letter, a number and a special character</td></tr>
+        <tr><td>Confirm password</td><td>Must be identical to the password</td></tr>
+        <tr><td>Profile photo / ID proof</td><td>Allowed extensions (JPG/JPEG/PNG/WEBP for the photo; PDF/JPG/JPEG/PNG for the ID proof), not empty, max 2 MB / 5 MB</td></tr>
+    </table>
+
+    <h3>Code Explanation</h3>
+    <p style="font-size:10.5pt;color:#444"><i>The excerpts below are copied from the project source and shortened; "..." marks omitted lines.</i></p>
+    <div class="file">Question1_Frontend/js/validation.js – password strength rules and password validator</div>
+<pre>const PASSWORD_RULES = {
+    length:  (pw) =&gt; pw.length &gt;= 8,
+    upper:   (pw) =&gt; /[A-Z]/.test(pw),
+    lower:   (pw) =&gt; /[a-z]/.test(pw),
+    number:  (pw) =&gt; /[0-9]/.test(pw),
+    special: (pw) =&gt; /[^A-Za-z0-9]/.test(pw)
+};
+...
+password: function () {
+    const password = document.getElementById('password').value;
+    if (password === '') { return 'Password is required.'; }
+    const missing = [];
+    if (!PASSWORD_RULES.length(password))  { missing.push('8+ characters'); }
+    if (!PASSWORD_RULES.upper(password))   { missing.push('an upper-case letter'); }
+    ...
+    if (missing.length &gt; 0) { return 'Weak password – add ' + missing.join(', ') + '.'; }
+    return '';
+},</pre>
+    <div class="file">Question1_Frontend/js/validation.js – blocking an invalid submission</div>
+<pre>form.addEventListener('submit', function (event) {
+    const errors = [];
+    Object.keys(validators).forEach(function (fieldId) {
+        if (!validateField(fieldId)) {               // shows the red message under the field
+            errors.push(document.getElementById(fieldId + '-error').textContent);
+        }
+    });
+    if (errors.length &gt; 0) {
+        event.preventDefault();                       // STOP – the form is not sent
+        /* ...build the error summary with textContent and focus the first wrong field... */
+    }
+});</pre>
+    <p>Every validator returns an error message or an empty string. <code>validateField()</code> writes the message with <code>textContent</code> (never <code>innerHTML</code>, so no HTML can be injected) and toggles the <code>is-invalid</code> / <code>is-valid</code> CSS classes. The source files contain inline comments explaining each part.</p>
+</section>
+
+<section class="page-break">
+    <h3>Output</h3>
+    <figure><img src="../Screenshots/01-registration-page.png" alt=""><figcaption>Figure 2.1 – Registration form (HTML + CSS)</figcaption></figure>
+</section>
+<section class="page-break">
+    <figure><img src="../Screenshots/02-registration-validation.png" alt=""><figcaption>Figure 2.2 – JavaScript validation: error summary, invalid email, weak password, password mismatch, invalid file type; submission blocked</figcaption></figure>
+</section>
+<section class="page-break">
+    <figure><img src="../Screenshots/03-registration-valid.png" alt=""><figcaption>Figure 2.3 – Valid input: all fields green, password strength "Strong", photo preview</figcaption></figure>
+</section>
+<section class="page-break">
+    <div class="two">
+        <figure><img class="mobile" src="../Screenshots/19-registration-mobile.png" alt=""><figcaption>Figure 2.4 – Responsive layout on a mobile screen</figcaption></figure>
+        <figure><div class="crop" style="height:55mm"><img src="../Screenshots/03b-registration-success.png" alt=""></div><figcaption>Figure 2.5 – Valid registration saved by PHP</figcaption></figure>
+    </div>
+    <h3>Result</h3>
+    <div class="result">The student registration form was created with HTML, styled with responsive CSS and validated with JavaScript. Required fields, e-mail format, password strength, password confirmation and file type/size are checked, clear error messages are shown, and the form cannot be submitted until every error is corrected.</div>
+</section>
+
+<!-- ============================ QUESTION 2 ============================ -->
+<section class="page-break">
+    <h2>3. QUESTION 2 – PHP &amp; MySQL Admin Panel (16 Marks)</h2>
+    <h3>Aim</h3>
+    <p>To create PHP pages for the college admin panel that perform CRUD operations on student records in MySQL, handle uploads of profile images and documents, store the file metadata in MySQL linked to the student, display the uploaded files when a student is viewed, and validate file size and type while preventing files from being overwritten.</p>
+
+    <h3>Implementation</h3>
+    <table class="grid">
+        <tr><th>Page</th><th>Function</th></tr>
+        <tr><td><code>login.php</code> / <code>logout.php</code></td><td>Admin login with <code>password_verify()</code> and PHP sessions; logout destroys the session</td></tr>
+        <tr><td><code>dashboard.php</code></td><td><b>Read</b> – statistics, search/filter and the list of all students</td></tr>
+        <tr><td><code>add_student.php</code></td><td><b>Create</b> – new student with optional photo and document</td></tr>
+        <tr><td><code>edit_student.php</code></td><td><b>Update</b> – loads the record, validates and updates it</td></tr>
+        <tr><td><code>delete_student.php</code></td><td><b>Delete</b> – confirmation page, then deletes the record and its files</td></tr>
+        <tr><td><code>view_student.php</code></td><td><b>View</b> – full details, profile photo and all uploaded files</td></tr>
+        <tr><td><code>upload_file.php</code> / <code>delete_file.php</code></td><td>Upload a new photo/document; delete a single file</td></tr>
+        <tr><td><code>view_file.php</code></td><td>Serves a stored file to the logged-in admin (view or download)</td></tr>
+        <tr><td><code>includes/upload_handler.php</code></td><td>All upload validation and storage logic</td></tr>
+        <tr><td><code>config/database.php</code></td><td>MySQL settings and the shared PDO connection</td></tr>
+    </table>
+
+    <h3>File upload handling and validation</h3>
+    <ul>
+        <li>Upload error codes are checked, and <code>is_uploaded_file()</code> confirms the file came from the form.</li>
+        <li><b>Size:</b> profile photo ≤ 2 MB, document ≤ 5 MB.</li>
+        <li><b>Type:</b> extension whitelist (photo: jpg, jpeg, png, webp; document: pdf, jpg, jpeg, png), dangerous double extensions such as <code>shell.php.jpg</code> are rejected, and the <b>real MIME type</b> is read from the file content with <code>finfo</code>.</li>
+        <li><b>No overwriting:</b> every file is saved under a random 32-character name generated with <code>random_bytes()</code>, so two files with the same original name never replace each other.</li>
+        <li>Files go to <code>uploads/profiles</code> or <code>uploads/documents</code>; an <code>.htaccess</code> file blocks direct access and script execution there.</li>
+    </ul>
+
+    <h3>Code Explanation</h3>
+    <p style="font-size:10.5pt;color:#444"><i>The excerpts below are copied from the project source and shortened; "..." marks omitted lines.</i></p>
+    <div class="file">Question2_PHP/includes/upload_handler.php – checking size and the real MIME type</div>
+<pre>if ($size &gt; $rules['max_size']) {
+    return ['ok' =&gt; false, 'error' =&gt; sprintf('File is too large (%s). Maximum allowed size is %s.',
+            format_bytes($size), format_bytes($rules['max_size']))];
+}
+...
+// 6. Detect the REAL MIME type from the file's bytes (magic numbers)
+$finfo = new finfo(FILEINFO_MIME_TYPE);
+$mime = (string) $finfo-&gt;file($file['tmp_name']);
+if (!in_array($mime, $rules['types'][$extension], true)) {
+    return ['ok' =&gt; false, 'error' =&gt; sprintf('The file content (%s) does not match the .%s extension.', $mime, $extension)];
+}</pre>
+    <div class="file">Question2_PHP/includes/upload_handler.php – unique name + metadata stored in MySQL</div>
+<pre>do {   // random, unguessable name – the loop guarantees we NEVER overwrite a file
+    $storedName = bin2hex(random_bytes(16)) . '.' . $validated['extension'];
+    $destination = $folder . DIRECTORY_SEPARATOR . $storedName;
+} while (file_exists($destination));
+
+move_uploaded_file($file['tmp_name'], $destination);
+
+$stmt = db()-&gt;prepare(
+    'INSERT INTO student_files
+         (student_id, file_category, document_label, original_name, stored_name, file_path, file_type, file_size)
+     VALUES (:student_id, :category, :label, :original_name, :stored_name, :file_path, :file_type, :file_size)');
+$stmt-&gt;execute([':student_id' =&gt; $studentId, ':file_path' =&gt; $relativePath, ':file_type' =&gt; $validated['mime'], ...]);</pre>
+    <div class="file">Question2_PHP/edit_student.php – UPDATE with a prepared statement</div>
+<pre>$sql = 'UPDATE students
+           SET name = :name, roll_number = :roll, email = :email, course = :course,
+               phone = :phone, date_of_birth = :dob, address = :address WHERE id = :id';
+$stmt = db()-&gt;prepare($sql);
+$stmt-&gt;execute($params);          // user input is sent separately – no SQL injection</pre>
+    <p>Every form is re-validated on the server (<code>validate_student_data()</code>), the roll number and e-mail are checked for duplicates, every POST form carries a CSRF token, and every value printed in HTML is escaped with <code>htmlspecialchars()</code>. The upload date is filled automatically by MySQL (<code>DEFAULT CURRENT_TIMESTAMP</code>).</p>
+</section>
+
+<section class="page-break">
+    <h3>Output</h3>
+    <div class="two">
+        <figure><img class="half" src="../Screenshots/04-php-login.png" alt=""><figcaption>Figure 3.1 – Admin login</figcaption></figure>
+        <figure><img class="half" src="../Screenshots/04b-php-login-error.png" alt=""><figcaption>Figure 3.2 – Invalid login</figcaption></figure>
+    </div>
+    <figure><img class="half" src="../Screenshots/05-admin-dashboard.png" alt=""><figcaption>Figure 3.3 – Dashboard (Read): statistics and student list with photo thumbnails</figcaption></figure>
+</section>
+<section class="page-break">
+    <figure><img src="../Screenshots/06-add-student.png" alt=""><figcaption>Figure 3.4 – Add Student (Create) with profile photo and document</figcaption></figure>
+</section>
+<section class="page-break">
+    <figure><img src="../Screenshots/06b-add-student-validation.png" alt=""><figcaption>Figure 3.5 – Server-side validation: duplicate roll number, invalid e-mail, weak password</figcaption></figure>
+</section>
+<section class="page-break">
+    <figure><img src="../Screenshots/07-student-list.png" alt=""><figcaption>Figure 3.6 – Student list after adding a student</figcaption></figure>
+</section>
+<section class="page-break">
+    <figure><img src="../Screenshots/08-edit-student.png" alt=""><figcaption>Figure 3.7 – Edit Student (Update)</figcaption></figure>
+</section>
+<section class="page-break">
+    <figure><img src="../Screenshots/09-student-details.png" alt=""><figcaption>Figure 3.8 – View Student after update: details, profile image and uploaded files</figcaption></figure>
+</section>
+<section class="page-break">
+    <figure><img src="../Screenshots/11-uploaded-files.png" alt=""><figcaption>Figure 3.9 – Uploaded files with type, size and upload date; the same file name uploaded twice is stored twice (no overwriting)</figcaption></figure>
+</section>
+<section class="page-break">
+    <figure><div class="crop" style="height:18.5mm"><img src="../Screenshots/10b-upload-invalid-type.png" alt=""></div><figcaption>Figure 3.10 – Unsupported file type (.txt) rejected</figcaption></figure>
+    <figure><div class="crop" style="height:18.5mm"><img src="../Screenshots/10c-upload-oversized.png" alt=""></div><figcaption>Figure 3.11 – File larger than 5 MB rejected</figcaption></figure>
+    <figure><div class="crop" style="height:18.5mm"><img src="../Screenshots/10d-upload-content-mismatch.png" alt=""></div><figcaption>Figure 3.12 – Text file renamed to .jpg rejected by the MIME check</figcaption></figure>
+    <figure><div class="crop" style="height:18.5mm"><img src="../Screenshots/10e-upload-dangerous-extension.png" alt=""></div><figcaption>Figure 3.13 – <code>shell.php.jpg</code> rejected (dangerous extension)</figcaption></figure>
+</section>
+<section class="page-break">
+    <figure><img class="half" src="../Screenshots/11b-php-view-document.png" alt=""><figcaption>Figure 3.14 – Uploaded PDF displayed through <code>view_file.php</code></figcaption></figure>
+    <div class="two">
+        <figure><img class="half" src="../Screenshots/18-delete-confirmation.png" alt=""><figcaption>Figure 3.15 – Delete confirmation listing the files to be removed</figcaption></figure>
+        <figure><img class="half" src="../Screenshots/18b-delete-success.png" alt=""><figcaption>Figure 3.16 – Student and files deleted</figcaption></figure>
+    </div>
+</section>
+<section class="page-break">
+    <figure><div class="crop" style="height:62mm"><img src="../Screenshots/21-database-tables.png" alt=""></div><figcaption>Figure 3.17 – MySQL tables of the <code>student_portal</code> database (phpMyAdmin)</figcaption></figure>
+    <figure><img src="../Screenshots/22-student-files-metadata.png" alt="" style="max-height:100mm"><figcaption>Figure 3.18 – File metadata stored in MySQL: student ID, file path, file type, size and upload date</figcaption></figure>
+    <h3>Result</h3>
+    <div class="result">The PHP admin panel performs Add, Edit, Delete and View operations on student records in MySQL using prepared statements. Profile images and documents are uploaded, validated by size, extension and real MIME type, stored under unique names so existing files are never overwritten, and their path, type, size and upload date are saved in MySQL and displayed on the student's page.</div>
+</section>
+
+<!-- ============================ QUESTION 3 ============================ -->
+<section class="page-break">
+    <h2>4. QUESTION 3 – Servlet, JSP &amp; JDBC Portal (16 Marks)</h2>
+    <h3>Aim</h3>
+    <p>To develop Servlet pages that connect to MySQL with JDBC to fetch student details and file paths, stream the stored images and documents, display student profiles dynamically in JSP with <code>&lt;img&gt;</code> tags pointing to the Servlet, use looping and conditional logic for multiple students and files, and allow only logged-in users through session handling.</p>
+
+    <h3>Implementation (MVC structure)</h3>
+    <table class="grid">
+        <tr><th>Class / page</th><th>Role</th></tr>
+        <tr><td><code>DBConnection</code></td><td>Reads <code>db.properties</code>, loads the MySQL driver, returns JDBC connections</td></tr>
+        <tr><td><code>StudentDAO</code>, <code>FileDAO</code>, <code>UserDAO</code></td><td>All SQL (PreparedStatement) for students, file metadata and login</td></tr>
+        <tr><td><code>Student</code>, <code>StudentFile</code>, <code>User</code></td><td>Model classes (JavaBeans) used by the JSP pages</td></tr>
+        <tr><td><code>LoginServlet</code> (<code>/login</code>)</td><td>Checks username/password (bcrypt) and creates the <code>HttpSession</code></td></tr>
+        <tr><td><code>LogoutServlet</code> (<code>/logout</code>)</td><td>Invalidates the session</td></tr>
+        <tr><td><code>StudentListServlet</code> (<code>/students</code>)</td><td>Session check → loads all students → forwards to <code>students.jsp</code></td></tr>
+        <tr><td><code>StudentProfileServlet</code> (<code>/student?id=</code>)</td><td>Session check → loads one student and all files → <code>student-profile.jsp</code></td></tr>
+        <tr><td><code>FileDownloadServlet</code> (<code>/file?id=</code>)</td><td>Session check → finds the file safely → streams it with <code>ServletOutputStream</code></td></tr>
+        <tr><td><code>WEB-INF/web.xml</code></td><td>Servlet mappings, session timeout, error pages; JSPs are kept in <code>WEB-INF/views</code></td></tr>
+    </table>
+
+    <h3>Code Explanation</h3>
+    <p style="font-size:10.5pt;color:#444"><i>The excerpts below are copied from the project source and shortened; "..." marks omitted lines.</i></p>
+    <div class="file">Question3_Servlet/.../dao/FileDAO.java – JDBC query for a student's files</div>
+<pre>String sql = "SELECT " + COLUMNS + " FROM student_files WHERE student_id = ? "
+           + "ORDER BY (file_category = 'profile') DESC, upload_date DESC, id DESC";
+try (Connection conn = DBConnection.getConnection();
+     PreparedStatement stmt = conn.prepareStatement(sql)) {
+    stmt.setInt(1, studentId);
+    try (ResultSet rs = stmt.executeQuery()) {
+        while (rs.next()) { files.add(mapRow(rs)); }      // loop over every row
+    }
+}</pre>
+    <div class="file">Question3_Servlet/.../util/SessionUtil.java – only logged-in users may continue</div>
+<pre>HttpSession session = request.getSession(false);          // never creates a new session
+if (session == null || session.getAttribute("loggedInUser") == null) {
+    response.sendRedirect(request.getContextPath() + "/login?msg=login_required");
+    return true;
+}</pre>
+    <div class="file">Question3_Servlet/.../controller/FileDownloadServlet.java – safe path + streaming</div>
+<pre>Path baseDir    = Paths.get(DBConnection.getUploadBaseDir()).toRealPath();
+Path uploadsDir = baseDir.resolve("uploads").toRealPath();
+Path candidate  = baseDir.resolve(relativePath).normalize();
+if (!candidate.startsWith(uploadsDir) || !Files.isRegularFile(candidate)) { return null; }  // blocks ../ tricks
+...
+response.setContentType(contentType);                    // e.g. image/jpeg or application/pdf
+response.setHeader("Content-Disposition", buildDisposition(disposition, file.getOriginalName()));
+try (InputStream in = Files.newInputStream(filePath);
+     ServletOutputStream out = response.getOutputStream()) {
+    byte[] buffer = new byte[BUFFER_SIZE];
+    int bytesRead;
+    while ((bytesRead = in.read(buffer)) != -1) { out.write(buffer, 0, bytesRead); }
+}</pre>
+    <div class="file">Question3_Servlet/.../WEB-INF/views/student-profile.jsp – looping and conditional rendering</div>
+<pre>&lt;img class="profile-photo" src="${ctx}/file?id=${student.profilePhotoId}" alt="..."&gt;   &lt;%-- points to the Servlet --%&gt;
+
+&lt;c:forEach items="${files}" var="f"&gt;
+    &lt;c:choose&gt;
+        &lt;c:when test="${f.image}"&gt; &lt;img src="${ctx}/file?id=${f.id}" alt="..."&gt; &lt;/c:when&gt;
+        &lt;c:when test="${f.pdf}"&gt;   &lt;span class="file-icon pdf"&gt;PDF&lt;/span&gt;        &lt;/c:when&gt;
+        &lt;c:otherwise&gt;              &lt;span class="file-icon"&gt;FILE&lt;/span&gt;           &lt;/c:otherwise&gt;
+    &lt;/c:choose&gt;
+    &lt;a href="${ctx}/file?id=${f.id}"&gt;View&lt;/a&gt;  &lt;a href="${ctx}/file?id=${f.id}&amp;amp;download=true"&gt;Download&lt;/a&gt;
+&lt;/c:forEach&gt;</pre>
+    <p><code>students.jsp</code> uses <code>&lt;c:forEach&gt;</code> over all students and <code>&lt;c:choose&gt;</code> to show the photo (through <code>/file?id=…</code>) or the student's initials when no photo exists. All values are printed with <code>&lt;c:out&gt;</code> so they are HTML-escaped. On login the old session is invalidated and a new one is created (prevents session fixation), the session expires after 30 minutes, and protected pages are sent with <code>Cache-Control: no-store</code>.</p>
+</section>
+
+<section class="page-break">
+    <h3>Output</h3>
+    <div class="two">
+        <figure><img class="half" src="../Screenshots/12-servlet-login.png" alt=""><figcaption>Figure 4.1 – Servlet login page</figcaption></figure>
+        <figure><img class="half" src="../Screenshots/12b-servlet-invalid-login.png" alt=""><figcaption>Figure 4.2 – Invalid login</figcaption></figure>
+    </div>
+    <figure><img class="half" src="../Screenshots/13-servlet-student-list.png" alt=""><figcaption>Figure 4.3 – Student list: loop over all students, photos streamed by the Servlet, initials when no photo</figcaption></figure>
+</section>
+<section class="page-break">
+    <figure><img class="half" src="../Screenshots/14-servlet-student-profile.png" alt=""><figcaption>Figure 4.4 – Student profile: details and loop over multiple files (image preview / PDF icon)</figcaption></figure>
+    <figure><img class="half" src="../Screenshots/14b-servlet-profile-image-document.png" alt=""><figcaption>Figure 4.5 – Conditional rendering of a WEBP photo and a PNG certificate</figcaption></figure>
+</section>
+<section class="page-break">
+    <div class="two">
+        <figure><img class="half" src="../Screenshots/15-servlet-image-stream.png" alt=""><figcaption>Figure 4.6 – Image streamed by <code>/file?id=1</code></figcaption></figure>
+        <figure><img class="half" src="../Screenshots/16-servlet-document.png" alt=""><figcaption>Figure 4.7 – PDF document streamed inline</figcaption></figure>
+    </div>
+    <figure><img class="half" src="../Screenshots/15b-servlet-img-tag-source.png" alt=""><figcaption>Figure 4.8 – Generated HTML: <code>&lt;img src="/student-portal/file?id=1"&gt;</code> points to the Servlet (no file path exposed)</figcaption></figure>
+</section>
+<section class="page-break">
+    <div class="two">
+        <figure><img class="half" src="../Screenshots/18c-servlet-logout.png" alt=""><figcaption>Figure 4.9 – Logout invalidates the session</figcaption></figure>
+        <figure><img class="half" src="../Screenshots/17-session-protection.png" alt=""><figcaption>Figure 4.10 – Protected page without login redirects to the login page</figcaption></figure>
+    </div>
+    <div class="two">
+        <figure><img class="half" src="../Screenshots/16b-servlet-file-not-found.png" alt=""><figcaption>Figure 4.11 – Friendly 404 page for a missing file</figcaption></figure>
+        <figure><img class="mobile" style="max-height:110mm" src="../Screenshots/20-servlet-profile-mobile.png" alt=""><figcaption>Figure 4.12 – Responsive JSP page on mobile</figcaption></figure>
+    </div>
+    <h3>Result</h3>
+    <div class="result">The Servlet portal connects to MySQL with JDBC, fetches students and their file paths, and displays them dynamically in JSP using JSTL loops and conditions. Images and documents are streamed from the upload folder by <code>FileDownloadServlet</code> and shown through <code>&lt;img&gt;</code> tags and links that point to the Servlet. Session handling allows only logged-in users to access the portal.</div>
+</section>
+
+<!-- ============================ DATABASE ============================ -->
+<section class="page-break">
+    <h2>5. Database Schema</h2>
+    <p>The script <code>database/schema.sql</code> creates the database <code>student_portal</code>, its three tables with primary keys, unique keys, a foreign key and check constraints, two demo login accounts and six sample students. Passwords are stored only as bcrypt hashes.</p>
+    <table class="grid">
+        <tr><th>Table</th><th>Important columns</th><th>Constraints</th></tr>
+        <tr><td><code>users</code></td><td>id, username, full_name, password_hash, created_at, last_login</td><td>PK id; UNIQUE username</td></tr>
+        <tr><td><code>students</code></td><td>id, name, roll_number, email, course, phone, date_of_birth, address, password_hash, created_at, updated_at</td><td>PK id; UNIQUE roll_number; UNIQUE email</td></tr>
+        <tr><td><code>student_files</code></td><td>id, student_id, file_category, document_label, original_name, stored_name, file_path, file_type, file_size, upload_date</td><td>PK id; FK student_id → students.id ON DELETE CASCADE; UNIQUE stored_name; CHECK category and size</td></tr>
+    </table>
+    <div class="file">database/schema.sql – file metadata table</div>
+<pre>CREATE TABLE student_files (
+    id              INT             NOT NULL AUTO_INCREMENT,
+    student_id      INT             NOT NULL,
+    file_category   VARCHAR(20)     NOT NULL,
+    document_label  VARCHAR(50)     NULL,
+    original_name   VARCHAR(255)    NOT NULL,
+    stored_name     VARCHAR(100)    NOT NULL,
+    file_path       VARCHAR(255)    NOT NULL,
+    file_type       VARCHAR(100)    NOT NULL,
+    file_size       BIGINT UNSIGNED NOT NULL,
+    upload_date     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT uq_files_stored_name UNIQUE (stored_name),
+    CONSTRAINT fk_files_student FOREIGN KEY (student_id)
+        REFERENCES students (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT chk_files_category CHECK (file_category IN ('profile', 'document')),
+    CONSTRAINT chk_files_size CHECK (file_size &gt; 0)
+) ENGINE = InnoDB;</pre>
+
+    </section>
+<section class="page-break">
+    <h2>6. Security Measures</h2>
+    <table class="grid compact">
+        <tr><th>Threat</th><th>Protection used</th></tr>
+        <tr><td>SQL injection</td><td>Prepared statements in PHP (PDO) and Java (PreparedStatement)</td></tr>
+        <tr><td>Password theft</td><td>bcrypt hashes (<code>password_hash()</code>, <code>password_verify()</code>, jBCrypt); same error for wrong user or password</td></tr>
+        <tr><td>Cross-site scripting</td><td><code>htmlspecialchars()</code>, <code>&lt;c:out&gt;</code>, <code>textContent</code></td></tr>
+        <tr><td>Cross-site request forgery</td><td>Token in every PHP POST form, compared with <code>hash_equals()</code></td></tr>
+        <tr><td>Malicious uploads</td><td>Size limits, extension whitelist, MIME check, random names, no-execute uploads folder</td></tr>
+        <tr><td>Path traversal</td><td><code>realpath()</code> / <code>toRealPath()</code> and a check that the file stays inside <code>uploads/</code></td></tr>
+        <tr><td>Unauthorised access</td><td>Login sessions in PHP and Java, JSPs inside <code>WEB-INF</code>, <code>.htaccess</code> deny rules</td></tr>
+        <tr><td>Information leakage</td><td>Friendly error pages; technical details only in the server logs</td></tr>
+    </table>
+
+    <h2 style="margin-top:14px">7. Testing Summary</h2>
+    <p>71 test cases were executed on the running application (18 for the frontend, 29 for PHP and 24 for the Servlet portal); all of them passed. The complete table with input, expected result, actual result and status is in <code>docs/TESTING.md</code>. Important cases:</p>
+    <table class="grid compact">
+        <tr><th>ID</th><th>Test</th><th>Actual result</th><th>Status</th></tr>
+        <tr><td>F02–F10</td><td>Invalid name, roll, email, phone, course, weak password, mismatch, file type</td><td>Correct message under each field; form not submitted</td><td>PASS</td></tr>
+        <tr><td>F13–F14</td><td>Valid registration</td><td>All fields green; saved by PHP</td><td>PASS</td></tr>
+        <tr><td>P04</td><td>Duplicate roll number / invalid email (server side)</td><td>Rejected with messages</td><td>PASS</td></tr>
+        <tr><td>P05–P09</td><td>Add, list, search, edit, view student</td><td>All operations successful</td><td>PASS</td></tr>
+        <tr><td>P10–P11</td><td>Upload image and PDF</td><td>Stored under random names; metadata saved</td><td>PASS</td></tr>
+        <tr><td>P12–P15</td><td>.txt file, 6 MB PDF, fake JPG, <code>shell.php.jpg</code></td><td>All rejected</td><td>PASS</td></tr>
+        <tr><td>P16</td><td>Same file name uploaded twice</td><td>Both kept with different stored names</td><td>PASS</td></tr>
+        <tr><td>P20</td><td>Delete student with files</td><td>Record, metadata and files removed</td><td>PASS</td></tr>
+        <tr><td>P21–P28</td><td>Direct uploads access, no CSRF token, SQL injection, XSS, path traversal</td><td>Blocked (403 / rejected / escaped / 404)</td><td>PASS</td></tr>
+        <tr><td>S03–S04</td><td>Servlet login; protected pages without session</td><td>Session created; others redirected to login</td><td>PASS</td></tr>
+        <tr><td>S05–S08</td><td>Student list and profiles</td><td>Loops and conditions render correctly</td><td>PASS</td></tr>
+        <tr><td>S09–S13</td><td>Image and PDF streaming, forced download</td><td>Correct Content-Type and Content-Disposition</td><td>PASS</td></tr>
+        <tr><td>S21–S22</td><td>Logout, reuse of old session</td><td>Session invalidated; access denied</td><td>PASS</td></tr>
+    </table>
+
+</section>
+<section class="page-break">
+    <h2>8. Conclusion</h2>
+    <p>In this assignment I built a working student admission portal that combines a responsive HTML/CSS registration form with JavaScript validation, a PHP–MySQL admin panel for full CRUD operations and secure profile-image/document uploads, and a Java Servlet/JSP portal that reads the same database through JDBC and streams files through a Servlet. Uploaded files are validated by size, extension and real MIME type, stored under unique names so nothing is overwritten, and their metadata is linked to each student record. Prepared statements, password hashing, output escaping, CSRF tokens and session checks protect the system against common attacks and unauthorised access. Building it helped me understand how client-side scripting, server-side PHP, Java web components and a relational database work together in one application.</p>
+
+    <h2 style="margin-top:16px">9. GitHub Repository and Submission Files</h2>
+    <p><b>GitHub Repository:</b> <span id="repo-url"><a href="https://github.com/Mithu2706/WT_Assignment">https://github.com/Mithu2706/WT_Assignment</a></span></p>
+    <p>The repository contains the complete source code, the database schema and all screenshots:</p>
+    <table class="grid">
+        <tr><th>Submission requirement</th><th>Location in the repository</th></tr>
+        <tr><td>HTML, CSS and JavaScript files</td><td><code>Question1_Frontend/</code></td></tr>
+        <tr><td>PHP files</td><td><code>Question2_PHP/</code></td></tr>
+        <tr><td>Servlet and WEB-INF files</td><td><code>Question3_Servlet/src/main/java</code>, <code>Question3_Servlet/src/main/webapp/WEB-INF/</code></td></tr>
+        <tr><td>DB schema script</td><td><code>database/schema.sql</code></td></tr>
+        <tr><td>Screenshots of output</td><td><code>Screenshots/</code> (40 images, described in <code>Screenshots/README.md</code>)</td></tr>
+        <tr><td>Code explanation (inline comments)</td><td>Comments in every source file and <code>docs/CODE_EXPLANATION.md</code></td></tr>
+        <tr><td>Conclusion</td><td>Section 8 of this report and <code>docs/CONCLUSION.md</code></td></tr>
+        <tr><td>Setup instructions and demo login</td><td><code>README.md</code> (local demo: <code>admin</code> / <code>Admin@123</code>)</td></tr>
+    </table>
+</section>
+
+</body>
+</html>

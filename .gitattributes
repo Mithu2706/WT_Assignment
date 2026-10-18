@@ -1,8 +1,10 @@
-* text=auto eol=lf
+# Normalise text files; never touch binary files (images, PDFs, jars, test fixtures)
+* text=auto
 *.bat text eol=crlf
-*.cmd text eol=crlf
 *.png binary
 *.jpg binary
+*.jpeg binary
 *.webp binary
 *.pdf binary
 *.jar binary
+sample-data/test-files/* binary

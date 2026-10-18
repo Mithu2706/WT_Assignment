@@ -1,0 +1,16 @@
+# =====================================================================
+#  Question2_PHP/uploads/.htaccess
+#  Uploaded files must NEVER be executed or downloaded directly.
+#  All access goes through view_file.php (login + safe path checks).
+# =====================================================================
+
+# 1. Block every direct HTTP request to this folder (Apache 2.4 syntax)
+Require all denied
+
+# 2. Defence in depth: even if the rule above is removed, never run scripts here
+Options -Indexes -ExecCGI
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .phar .cgi .pl .py
+RemoveType .php .phtml .php3 .php4 .php5 .php7 .phar
+<IfModule php_module>
+    php_flag engine off
+</IfModule>

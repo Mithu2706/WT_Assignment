@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!--
+    Question1_Frontend/index.html — Landing page that links the three modules of the project:
+      Q1 Student registration form (this frontend folder)
+      Q2 PHP + MySQL admin panel (../Question2_PHP/)
+      Q3 Java Servlet + JSP portal (runs on Tomcat, port 8080)
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Admission Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="container header-inner">
+        <a href="index.html" class="brand">
+            <span class="brand-logo" aria-hidden="true">SP</span>
+            <span>
+                <span class="brand-title">Student Admission Portal</span>
+                <span class="brand-subtitle">Academic Year 2026 – 2027</span>
+            </span>
+        </a>
+        <nav class="header-nav" aria-label="Main navigation">
+            <a href="index.html" class="active" aria-current="page">Home</a>
+            <a href="register.html">Register</a>
+            <a href="../Question2_PHP/login.php">Admin Panel</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <h1>Welcome to the Student Admission Portal</h1>
+        <p>Register as a new student, manage student records as an administrator, or browse
+           student profiles and their uploaded documents in the faculty portal.</p>
+    </section>
+
+    <section class="module-grid">
+        <article class="module-card">
+            <span class="tag">Question 1 · HTML / CSS / JS</span>
+            <h2>Student Registration</h2>
+            <p>Responsive registration form with live JavaScript validation for required fields,
+               e-mail format, password strength and file uploads.</p>
+            <a class="btn btn-primary" href="register.html">Open Registration Form</a>
+        </article>
+
+        <article class="module-card">
+            <span class="tag">Question 2 · PHP / MySQL</span>
+            <h2>Admin Panel</h2>
+            <p>Secure admin area to add, edit, delete and view students, upload profile photos and
+               documents, and store file metadata in MySQL.</p>
+            <a class="btn btn-primary" href="../Question2_PHP/login.php">Open Admin Panel</a>
+        </article>
+
+        <article class="module-card">
+            <span class="tag">Question 3 · Servlet / JSP / JDBC</span>
+            <h2>Student Profile Portal</h2>
+            <p>Session-protected Java web app that lists students and streams their photos and
+               documents through a Servlet. Runs on Apache Tomcat.</p>
+            <a class="btn btn-primary" href="http://localhost:8080/student-portal/">Open Servlet Portal</a>
+        </article>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container">U21CS501 Web Technology · Assignment II · Student Admission Portal<br>Developed by <strong>Mithuna Kamalanathan</strong> · B.E CSE</div>
+</footer>
+</body>
+</html>

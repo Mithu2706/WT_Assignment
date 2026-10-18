@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<!--
+    Question1_Frontend/register.html  —  Question 1 (Frontend)
+    -------------------------------------------------
+    Student admission registration form.
+      * HTML5 form with name, roll number, email, phone, course,
+        password + confirm password, profile photo and ID-proof upload.
+      * Styled by css/style.css (responsive layout, styled inputs/buttons/errors).
+      * Validated by js/validation.js BEFORE submission (the form has
+        `novalidate`, so the browser's built-in bubbles are switched off and
+        all checks/messages come from our own JavaScript).
+      * When served by Apache (XAMPP) the valid form is POSTed to the PHP
+        back end (Question2_PHP/register.php), which validates everything again.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration | Student Admission Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ================= Header ================= -->
+<header class="site-header">
+    <div class="container header-inner">
+        <a href="index.html" class="brand">
+            <span class="brand-logo" aria-hidden="true">SP</span>
+            <span>
+                <span class="brand-title">Student Admission Portal</span>
+                <span class="brand-subtitle">Academic Year 2026 – 2027</span>
+            </span>
+        </a>
+        <nav class="header-nav" aria-label="Main navigation">
+            <a href="index.html">Home</a>
+            <a href="register.html" class="active" aria-current="page">Register</a>
+            <a href="../Question2_PHP/login.php">Admin Panel</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container page-layout">
+
+    <!-- ============ Left column: instructions ============ -->
+    <aside class="info-panel">
+        <h1>New Student Registration</h1>
+        <p>Fill in your details to apply for admission. All fields marked
+           <span class="required">*</span> are mandatory.</p>
+
+        <ol class="steps">
+            <li><strong>Personal details</strong> – your full name, roll number and a valid e-mail address.</li>
+            <li><strong>Course</strong> – choose the programme you are applying for.</li>
+            <li><strong>Password</strong> – at least 8 characters with upper-case, lower-case, a number and a special character.</li>
+            <li><strong>Documents</strong> – a profile photo (JPG, PNG or WEBP, max 2&nbsp;MB) and optionally an ID proof (PDF, JPG or PNG, max 5&nbsp;MB).</li>
+        </ol>
+
+        <div class="note">
+            Every field is checked as you type. The form cannot be submitted until all errors are fixed.
+        </div>
+    </aside>
+
+    <!-- ============ Right column: registration form ============ -->
+    <section class="form-card" aria-labelledby="form-heading">
+        <h2 id="form-heading">Registration Form</h2>
+
+        <!-- Summary box: filled by JavaScript when the user presses Submit with errors -->
+        <div id="errorSummary" class="alert alert-error" role="alert" hidden></div>
+        <!-- Success box: shown in "offline demo mode" (page opened directly from disk) -->
+        <div id="successMessage" class="alert alert-success" role="status" hidden></div>
+
+        <form id="registrationForm"
+              action="../Question2_PHP/register.php"
+              method="post"
+              enctype="multipart/form-data"
+              novalidate>
+
+            <div class="form-grid">
+
+                <!-- Full name -->
+                <div class="form-group">
+                    <label for="name">Full Name <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" maxlength="100"
+                           placeholder="e.g. Arjun Krishnan" autocomplete="name">
+                    <small class="error-message" id="name-error"></small>
+                </div>
+
+                <!-- Roll number -->
+                <div class="form-group">
+                    <label for="roll_number">Roll Number <span class="required">*</span></label>
+                    <input type="text" id="roll_number" name="roll_number" maxlength="15"
+                           placeholder="e.g. 23CS101" autocomplete="off">
+                    <small class="error-message" id="roll_number-error"></small>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" maxlength="150"
+                           placeholder="name@example.com" autocomplete="email">
+                    <small class="error-message" id="email-error"></small>
+                </div>
+
+                <!-- Phone (optional) -->
+                <div class="form-group">
+                    <label for="phone">Mobile Number <span class="optional">(optional)</span></label>
+                    <input type="tel" id="phone" name="phone" maxlength="10"
+                           placeholder="10-digit mobile number" autocomplete="tel">
+                    <small class="error-message" id="phone-error"></small>
+                </div>
+
+                <!-- Course -->
+                <div class="form-group full-width">
+                    <label for="course">Course <span class="required">*</span></label>
+                    <select id="course" name="course">
+                        <option value="">-- Select your course --</option>
+                        <option>B.E. Computer Science and Engineering</option>
+                        <option>B.E. Electronics and Communication Engineering</option>
+                        <option>B.E. Electrical and Electronics Engineering</option>
+                        <option>B.E. Mechanical Engineering</option>
+                        <option>B.E. Civil Engineering</option>
+                        <option>B.Tech. Information Technology</option>
+                        <option>B.Tech. Artificial Intelligence and Data Science</option>
+                    </select>
+                    <small class="error-message" id="course-error"></small>
+                </div>
+
+                <!-- Password + strength meter -->
+                <div class="form-group">
+                    <label for="password">Password <span class="required">*</span></label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" maxlength="64"
+                               placeholder="Create a strong password" autocomplete="new-password">
+                        <button type="button" class="toggle-password" data-target="password"
+                                aria-label="Show password">Show</button>
+                    </div>
+                    <div class="strength-meter" aria-hidden="true">
+                        <div class="strength-bar" id="strengthBar"></div>
+                    </div>
+                    <span class="strength-text" id="strengthText">Password strength: –</span>
+                    <ul class="password-rules" id="passwordRules">
+                        <li data-rule="length">At least 8 characters</li>
+                        <li data-rule="upper">One upper-case letter (A–Z)</li>
+                        <li data-rule="lower">One lower-case letter (a–z)</li>
+                        <li data-rule="number">One number (0–9)</li>
+                        <li data-rule="special">One special character (!@#$…)</li>
+                    </ul>
+                    <small class="error-message" id="password-error"></small>
+                </div>
+
+                <!-- Confirm password -->
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password <span class="required">*</span></label>
+                    <div class="password-wrapper">
+                        <input type="password" id="confirm_password" name="confirm_password" maxlength="64"
+                               placeholder="Re-enter your password" autocomplete="new-password">
+                        <button type="button" class="toggle-password" data-target="confirm_password"
+                                aria-label="Show password">Show</button>
+                    </div>
+                    <small class="error-message" id="confirm_password-error"></small>
+                </div>
+
+                <!-- Profile photo upload (required) -->
+                <div class="form-group">
+                    <label for="profile_photo">Profile Photo <span class="required">*</span></label>
+                    <div class="file-input">
+                        <input type="file" id="profile_photo" name="profile_photo"
+                               accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                        <img id="photoPreview" class="photo-preview" alt="Selected photo preview" hidden>
+                    </div>
+                    <span class="hint">JPG, JPEG, PNG or WEBP · max 2 MB</span>
+                    <small class="error-message" id="profile_photo-error"></small>
+                </div>
+
+                <!-- ID proof upload (optional) -->
+                <div class="form-group">
+                    <label for="id_proof">ID Proof <span class="optional">(optional)</span></label>
+                    <div class="file-input">
+                        <input type="file" id="id_proof" name="id_proof"
+                               accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+                    </div>
+                    <span class="hint">PDF, JPG, JPEG or PNG · max 5 MB</span>
+                    <small class="error-message" id="id_proof-error"></small>
+                </div>
+
+                <!-- Declaration -->
+                <div class="form-group full-width">
+                    <label class="checkbox-label" for="terms">
+                        <input type="checkbox" id="terms" name="terms" value="1">
+                        I declare that the information provided is true and correct.
+                    </label>
+                    <small class="error-message" id="terms-error"></small>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="reset" class="btn btn-secondary">Reset</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Submit Registration</button>
+            </div>
+        </form>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container">U21CS501 Web Technology · Assignment II · Student Admission Portal<br>Developed by <strong>Mithuna Kamalanathan</strong> · B.E CSE</div>
+</footer>
+
+<script src="js/validation.js"></script>
+</body>
+</html>

@@ -1,167 +1,295 @@
-# Student Management Portal
+# Student Portal – Web Technology Assignment II
 
-**U21CS501 Web Technology - Assignment II** (III Year, Semester V)
+**Student details:**
+- Name: Mithuna Kamalanathan
+- Roll Number: 24CS117
+- Course: B.E CSE
 
-One coherent portal built in three layers that share **one MySQL database and one private file store**:
+**Course:** U21CS501 Web Technology · **Assignment:** II (40 marks) · **Academic Year:** 2026 – 2027
 
-| Question | Module | Technology | Folder |
+**Submission report (PDF):** [`Mithuna_Kamalanathan_24CS117_Web_Technology_Assignment_II_FINAL.pdf`](Mithuna_Kamalanathan_24CS117_Web_Technology_Assignment_II_FINAL.pdf)
+
+A complete, locally runnable student admission portal built in three clearly separated modules that all share **one MySQL database**:
+
+| Module | Question | Technology | Folder |
 |---|---|---|---|
-| Q1 (8 marks) | Student registration form | HTML5, CSS3, vanilla JavaScript | [`frontend/`](frontend/) |
-| Q2 (16 marks) | Admin panel: student CRUD, uploads, file metadata | PHP 8 (PDO), MySQL | [`php-admin/`](php-admin/) |
-| Q3 (16 marks) | Profile portal: dynamic profiles, file streaming, sessions | Java Servlets, JSP/JSTL, JDBC, Maven WAR | [`java-servlet/`](java-servlet/) |
-| Shared | Schema, sample data, demo files | MySQL / MariaDB | [`database/`](database/) |
-
-![Registration form](screenshots/02-registration-form.png)
+| Student registration form | Q1 – Frontend (8 marks) | HTML5, CSS3, JavaScript | [`Question1_Frontend/`](Question1_Frontend/) |
+| Admin panel – CRUD + file uploads | Q2 – PHP & MySQL (16 marks) | PHP 8 (PDO), MySQL / MariaDB | [`Question2_PHP/`](Question2_PHP/) |
+| Student profile portal | Q3 – Servlet & JDBC (16 marks) | Java Servlet 3.1, JSP + JSTL, JDBC, Tomcat 8.5/9 | [`Question3_Servlet/`](Question3_Servlet/) |
 
 ---
 
-## Contents
-1. [Features](#features)
-2. [Architecture](#architecture)
-3. [Screenshots](#screenshots)
-4. [Quick start (Windows + XAMPP)](#quick-start-windows--xampp)
-5. [Application URLs](#application-urls)
-6. [Project structure](#project-structure)
-7. [Documentation](#documentation)
+## 1. Project Overview
 
----
+1. A student opens the **registration form**, fills it in and JavaScript validates every field before it can be submitted. When served through Apache the valid form is saved by PHP (`Question2_PHP/register.php`).
+2. An administrator logs in to the **PHP admin panel** to add, edit, view and delete student records and to upload profile photos and documents (ID proof, certificates, mark sheets). Files are stored on disk under random names; their metadata (student id, path, MIME type, size, upload date, original name) is stored in MySQL.
+3. Faculty log in to the **Java Servlet portal**, which reads the *same* database through JDBC, lists all students, shows each profile and **streams photos and documents through a Servlet** (`<img src="file?id=…">`). Only logged-in users (HttpSession) can access it.
 
-## Features
+## 2. Assignment Requirements Covered
 
-### Q1 - Registration form ([`frontend/register.html`](frontend/register.html))
-- Semantic HTML5 form: name, roll number, email, course, password + confirmation, profile photo, optional ID proof, declaration.
-- Accessible: `<label for>`, `fieldset/legend`, `aria-invalid`, `aria-describedby`, live regions, error summary with links, skip link, keyboard-usable file pickers.
-- Custom CSS3 design (no framework): navy brand panel, warm-white card, teal accents, focus rings, error/success states, responsive down to 360 px.
-- JavaScript validation ([`frontend/js/validation.js`](frontend/js/validation.js)): required fields, email format, roll-number pattern, **password strength meter** with a live checklist, password confirmation, **file type (extension + MIME + real magic bytes), file size**, duplicate-submit protection, AJAX submission with server error mapping.
-- Submits to a PHP endpoint that **repeats every check on the server** and creates the student, a student login and the uploaded files.
+| Requirement (from the assignment PDF) | Where it is implemented |
+|---|---|
+| **Q1.1** HTML registration form – name, roll number, email, course, file upload | [`Question1_Frontend/register.html`](Question1_Frontend/register.html) |
+| **Q1.2** CSS – layout, colours, responsive design, styled inputs/buttons/error messages | [`Question1_Frontend/css/style.css`](Question1_Frontend/css/style.css) |
+| **Q1.3** JS validation – required fields, email format, password strength | [`Question1_Frontend/js/validation.js`](Question1_Frontend/js/validation.js) |
+| **Q2.1** CRUD (Add, Edit, Delete, View) with MySQL | `add_student.php`, `edit_student.php`, `delete_student.php`, `view_student.php`, `dashboard.php` |
+| **Q2.2** File upload handling – profile images & documents | [`Question2_PHP/upload_file.php`](Question2_PHP/upload_file.php), [`includes/upload_handler.php`](Question2_PHP/includes/upload_handler.php) |
+| **Q2.3** Store metadata in MySQL – file path, type, upload date linked to student | `student_files` table in [`database/schema.sql`](database/schema.sql), `store_upload()` |
+| **Q2.4** Display uploaded files when viewing student details | [`Question2_PHP/view_student.php`](Question2_PHP/view_student.php), [`view_file.php`](Question2_PHP/view_file.php) |
+| **Q2.5** Validation & error handling – size, type, prevent overwriting | `validate_upload()` / `store_upload()` in [`upload_handler.php`](Question2_PHP/includes/upload_handler.php) |
+| **Q3.1** Connect to MySQL with JDBC, fetch students + file paths | [`DBConnection.java`](Question3_Servlet/src/main/java/com/studentportal/dao/DBConnection.java), [`StudentDAO.java`](Question3_Servlet/src/main/java/com/studentportal/dao/StudentDAO.java), [`FileDAO.java`](Question3_Servlet/src/main/java/com/studentportal/dao/FileDAO.java) |
+| **Q3.2** Retrieve and stream images/documents from the storage folder | [`FileDownloadServlet.java`](Question3_Servlet/src/main/java/com/studentportal/controller/FileDownloadServlet.java) |
+| **Q3.3** Dynamic profiles in JSP with `<img>` tags pointing to the Servlet | [`students.jsp`](Question3_Servlet/src/main/webapp/WEB-INF/views/students.jsp), [`student-profile.jsp`](Question3_Servlet/src/main/webapp/WEB-INF/views/student-profile.jsp) |
+| **Q3.4** Looping & conditional logic for multiple students and files | `<c:forEach>` / `<c:choose>` in the two JSPs |
+| **Q3.5** Session handling – only logged-in users | [`LoginServlet`](Question3_Servlet/src/main/java/com/studentportal/controller/LoginServlet.java), [`SessionUtil`](Question3_Servlet/src/main/java/com/studentportal/util/SessionUtil.java), [`LogoutServlet`](Question3_Servlet/src/main/java/com/studentportal/controller/LogoutServlet.java) |
+| Submission: PHP files, Servlet WEB-INF files, HTML/CSS/JS | all folders above, [`WEB-INF/web.xml`](Question3_Servlet/src/main/webapp/WEB-INF/web.xml) |
+| Submission: DB schema script | [`database/schema.sql`](database/schema.sql) |
+| Submission: Screenshots of browser output | [`Screenshots/`](Screenshots/) (40 real screenshots, see [`Screenshots/README.md`](Screenshots/README.md)) |
+| Submission: Explanation of code with inline comments | inline comments in every file + [`docs/CODE_EXPLANATION.md`](docs/CODE_EXPLANATION.md) |
+| Submission: Brief conclusion (3–5 lines) | [`docs/CONCLUSION.md`](docs/CONCLUSION.md) and section 8 of the PDF report |
+| Submission report (cover page, aim, implementation, code explanation, output, result per question) | [`Mithuna_Kamalanathan_24CS117_Web_Technology_Assignment_II_FINAL.pdf`](Mithuna_Kamalanathan_24CS117_Web_Technology_Assignment_II_FINAL.pdf) |
+| Submission: GitHub repository link | see [section 14](#14-github) |
 
-### Q2 - PHP admin panel ([`php-admin/`](php-admin/))
-- Admin login (bcrypt, session ID regeneration, idle timeout, POST+CSRF logout).
-- Dashboard, searchable/sortable/paginated student list, add, view, edit, delete (with confirmation dialog and a no-JavaScript fallback page).
-- Uploads of profile photos and documents (ID proof, certificate, marksheet, other), stored under `storage/uploads/students/<id>/<category>/<random-hex>.<ext>`.
-- Metadata in MySQL: student ID, original name, generated name, relative path, detected MIME type, size, SHA-256, uploader, upload date, category.
-- Server-side file checks: size limit, **real content type via `finfo`**, image decoding, PDF header, embedded-code detection, never trusting client name/MIME/extension.
-- Images and documents displayed on the profile; files streamed only through the authenticated `file.php`.
+## 3. Technologies Used
 
-### Q3 - Java Servlet portal ([`java-servlet/`](java-servlet/))
-- Maven WAR, Servlet 3.1 / JSP 2.3 (`javax.*`, matches XAMPP's Tomcat 8.5, also runs on Tomcat 9).
-- Layers: `model` → `dao` (JDBC, prepared statements only) → `servlet` → JSP views, plus `filter`, `listener` and `util` (`DatabaseUtil`, `AppConfig`, `PasswordUtil`, `StoragePaths`, `WebUtil`).
-- Lists students with `<c:forEach>`, renders 0 / 1 / many files with `<c:choose>`, `<img src=".../photo?student=ID">` served by `FileServlet`.
-- `FileServlet` streams images and documents with correct `Content-Type`, `Content-Length` and a safe `Content-Disposition`.
-- Login with the **same accounts** as PHP (verifies PHP's bcrypt hashes), session ID change on login, idle timeout, logout invalidates the session.
-- Roles: `admin`/`staff` see every profile; a `student` sees only their own profile and files.
+- **Frontend:** HTML5, CSS3 (custom CSS, Flexbox/Grid, media queries – no framework), vanilla JavaScript (ES6)
+- **Back end 1:** PHP 8.1+ with PDO prepared statements, sessions, `password_hash()` / `password_verify()`, `finfo` MIME detection
+- **Database:** MySQL 5.7+/8 or MariaDB 10.4+ (XAMPP ships MariaDB 10.4)
+- **Back end 2:** Java 8+ (tested on JDK 24), Servlet 3.1 / JSP 2.3 (`javax.servlet`), JSTL 1.2, JDBC with MySQL Connector/J 8.4.0, jBCrypt 0.4
+- **Servers:** Apache 2.4 (XAMPP) for PHP, Apache Tomcat 8.5 (bundled with XAMPP) or Tomcat 9 for the servlets
+- **Build:** Maven (`pom.xml`) **or** the included `build.bat` (JDK only, no Maven required)
 
----
+## 4. Architecture
 
-## Architecture
-
-```mermaid
-flowchart LR
-    B[Browser] -->|register.html + validation.js| A[(Apache + PHP<br/>localhost:80)]
-    B -->|admin pages| A
-    B -->|profile pages| T[(Tomcat<br/>localhost:8080)]
-    A -->|PDO prepared statements| DB[(MySQL / MariaDB<br/>wt_student_portal)]
-    T -->|JDBC prepared statements| DB
-    A -->|move_uploaded_file / readfile| S[[storage/uploads<br/>private folder]]
-    T -->|Files.copy stream| S
-    E[.env shared config] -.-> A
-    E -.-> T
+```
+                 ┌──────────────────────────┐
+  Browser ──────►│ Question1_Frontend/ (HTML/CSS/JS)  │── valid form POST ──┐
+                 └──────────────────────────┘                     ▼
+                 ┌──────────────────────────┐   PDO      ┌──────────────────┐
+  Admin ────────►│ Question2_PHP/ (Apache+PHP)  │───────────►│  MySQL database  │
+                 │  CRUD, uploads, sessions │            │  student_portal  │
+                 └────────────┬─────────────┘            │  users           │
+                              │ writes files              │  students        │
+                              ▼                           │  student_files   │
+                 Question2_PHP/uploads/profiles|documents     └────────▲─────────┘
+                              ▲ reads files (safe path)            │ JDBC
+                 ┌────────────┴─────────────┐                      │
+  Faculty ──────►│ Question3_Servlet/ (Tomcat) │──────────────────────┘
+                 │  Servlets + JSP + DAO    │
+                 └──────────────────────────┘
 ```
 
-- **Shared database**: `courses`, `students`, `users`, `student_files` ([`database/schema.sql`](database/schema.sql)).
-- **Shared storage**: PHP writes files, both PHP (`file.php`) and Java (`FileServlet`) stream them. The folder is outside every public web root and denied by `.htaccess`.
-- **Shared configuration**: one `.env` file read by PHP ([`config.php`](php-admin/config/config.php)) and Java ([`AppConfig.java`](java-servlet/src/main/java/edu/webtech/portal/util/AppConfig.java)).
-- **Separate sessions**: PHP and Java each have their own login and session cookie (`SMP_ADMIN_SESSION`, `SMP_PORTAL_SESSION`). They are *not* shared; each application protects its own endpoints.
+The servlet application follows **MVC**: Servlets (controller) → DAO classes (JDBC, model access) → JSP views in `WEB-INF/views` (cannot be opened directly, only through a servlet that has checked the session).
 
----
+## 5. Folder Structure
 
-## Screenshots
+```
+student-portal/
+├── README.md
+├── Mithuna_Kamalanathan_24CS117_Web_Technology_Assignment_II_FINAL.pdf   # submission report
+├── .gitignore
+├── database/
+│   └── schema.sql                  # creates DB, tables, constraints, demo users & students
+├── sample-data/
+│   ├── sample_students.sql         # optional extra students
+│   ├── files/                      # sample photos (jpg/png/webp) + sample PDFs for uploading
+│   └── test-files/                 # invalid files for negative tests (txt, fake jpg, 6 MB pdf…)
+├── Question1_Frontend/                       # QUESTION 1
+│   ├── index.html                  # landing page linking all three modules
+│   ├── register.html               # registration form
+│   ├── css/style.css
+│   └── js/validation.js
+├── Question2_PHP/                      # QUESTION 2
+│   ├── config/database.php         # DB settings, upload limits, PDO connection (.htaccess: deny)
+│   ├── includes/                   # (.htaccess: deny)
+│   │   ├── auth.php                # session start, timeout, require_login()
+│   │   ├── functions.php           # escaping, CSRF, flash messages, validation, create student
+│   │   ├── upload_handler.php      # secure upload validation/storage/deletion
+│   │   ├── student_form.php        # shared add/edit form fields
+│   │   ├── header.php / footer.php
+│   ├── index.php  login.php  logout.php  dashboard.php
+│   ├── add_student.php  edit_student.php  delete_student.php  view_student.php
+│   ├── upload_file.php  delete_file.php  view_file.php
+│   ├── register.php                # receives the frontend registration form
+│   ├── css/admin.css
+│   └── uploads/                    # .htaccess: deny all + no script execution
+│       ├── profiles/
+│       └── documents/
+├── Question3_Servlet/                 # QUESTION 3
+│   ├── pom.xml                     # Maven build → target/student-portal.war
+│   ├── build.bat                   # build without Maven (javac + jar)
+│   ├── lib/                        # jars used by build.bat (Connector/J, jBCrypt, JSTL)
+│   └── src/main/
+│       ├── java/com/studentportal/
+│       │   ├── controller/  LoginServlet, LogoutServlet, StudentListServlet,
+│       │   │                StudentProfileServlet, FileDownloadServlet
+│       │   ├── dao/         DBConnection, StudentDAO, FileDAO, UserDAO
+│       │   ├── model/       Student, StudentFile, User
+│       │   └── util/        SessionUtil, AppLifecycleListener
+│       ├── resources/db.properties
+│       └── webapp/
+│           ├── index.jsp
+│           ├── css/servlet.css
+│           └── WEB-INF/
+│               ├── web.xml
+│               └── views/   login.jsp, students.jsp, student-profile.jsp, error.jsp,
+│                            fragments/header.jspf, fragments/footer.jspf
+├── Screenshots/                    # 40 PNG screenshots of the running application + README
+└── docs/
+    ├── CODE_EXPLANATION.md
+    ├── TESTING.md
+    ├── CONCLUSION.md
+    └── report.html                 # source of the PDF report (Chrome → Print → Save as PDF)
+```
 
-All screenshots are real captures of the running applications (see [`screenshots/README.md`](screenshots/README.md) for the full list of 35).
+> **Folder naming:** one top-level folder per assignment question (`Question1_Frontend`, `Question2_PHP`, `Question3_Servlet`) so each answer is easy to find.
+>
+> **Deviation from the suggested structure (deliberate):** the JSP pages live in `WEB-INF/views/` instead of the web root so that a browser can never open a JSP directly and bypass the servlet's session check. A few helper files (`functions.php`, `upload_handler.php`, `student_form.php`, `view_file.php`, `register.php`, `UserDAO`, `SessionUtil`) were added to avoid duplicated code.
+
+## 6. Database Setup
+
+The database is shared by PHP and Java. Import the script **once** (it drops and recreates the tables):
+
+```bash
+C:\xampp\mysql\bin\mysql.exe -u root < database\schema.sql
+```
+
+or open **phpMyAdmin** (`http://localhost/phpmyadmin`) → *Import* → choose `database/schema.sql` → *Go*.
+
+Optional extra students:
+
+```bash
+C:\xampp\mysql\bin\mysql.exe -u root student_portal < sample-data\sample_students.sql
+```
+
+Tables: `users` (login accounts), `students` (records; `roll_number` and `email` UNIQUE), `student_files` (file metadata; `student_id` FOREIGN KEY → `students.id` with `ON DELETE CASCADE`).
+
+## 7. PHP Setup (XAMPP / WAMP)
+
+1. Install **XAMPP** (includes Apache, PHP 8.2, MariaDB and phpMyAdmin). WAMP works the same way (`C:\wamp64\www`).
+2. Start **Apache** and **MySQL** from the XAMPP Control Panel.
+3. Put the project inside the web root so the URL is `http://localhost/student-portal/`:
+   - copy the whole `student-portal` folder to `C:\xampp\htdocs\`, **or**
+   - keep it elsewhere and create a link (run in an *Administrator* Command Prompt):
+     ```bash
+     mklink /J C:\xampp\htdocs\student-portal C:\path\to\student-portal
+     ```
+4. Import the database (section 6).
+5. If your MySQL user/password are not `root` / *(empty)*, edit `Question2_PHP/config/database.php` (`DB_USER`, `DB_PASS`) or set the environment variables `SP_DB_USER` / `SP_DB_PASS`.
+6. Make sure `Question2_PHP/uploads/profiles` and `Question2_PHP/uploads/documents` are writable by Apache (they are by default on Windows/XAMPP).
+7. Required PHP extensions: `pdo_mysql`, `fileinfo`, `mbstring` (all enabled in XAMPP). XAMPP's `AllowOverride All` must stay enabled so the `.htaccess` protections work.
+
+## 8. Servlet Setup (Tomcat)
+
+**Requirements:** JDK 8 or newer (tested with JDK 24), Apache Tomcat **8.5 or 9** (`javax.servlet` API – XAMPP's bundled `C:\xampp\tomcat` is Tomcat 8.5.96), MySQL Connector/J (already in `Question3_Servlet/lib`).
+
+> Tomcat 10+ uses the `jakarta.*` namespace and will **not** run this `javax.*` application.
+
+1. **Configure** `Question3_Servlet/src/main/resources/db.properties`:
+   ```properties
+   db.url=jdbc:mysql://localhost:3306/student_portal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata
+   db.user=root
+   db.password=
+   upload.base.dir=C:/xampp/htdocs/student-portal/Question2_PHP
+   ```
+   `upload.base.dir` must point to the **Question2_PHP folder** (the one that contains `uploads/`), because the servlet streams the files that PHP uploaded. Environment variables `SP_DB_URL`, `SP_DB_USER`, `SP_DB_PASSWORD`, `SP_UPLOAD_BASE_DIR` override these values.
+2. **Build** (choose one):
+   ```bash
+   cd Question3_Servlet
+   mvn clean package
+   ```
+   or, without Maven (uses `javac`, `jar` and `CATALINA_HOME\lib\servlet-api.jar`):
+   ```bash
+   cd Question3_Servlet
+   build.bat
+   ```
+   Both produce `Question3_Servlet\target\student-portal.war`.
+3. **Deploy:** copy `target\student-portal.war` to `C:\xampp\tomcat\webapps\` (or run `build.bat deploy`). Tomcat unpacks it automatically.
+4. **Start Tomcat:** XAMPP Control Panel → Tomcat → *Start*, or:
+   ```bash
+   set JAVA_HOME=C:\Program Files\Java\jdk-24
+   C:\xampp\tomcat\bin\catalina.bat run
+   ```
+5. Open `http://localhost:8080/student-portal/`.
+
+## 9. Running the Project
+
+| What | URL |
+|---|---|
+| Landing page | http://localhost/student-portal/Question1_Frontend/index.html |
+| Q1 Registration form | http://localhost/student-portal/Question1_Frontend/register.html |
+| Q2 PHP admin panel | http://localhost/student-portal/Question2_PHP/ |
+| Q3 Servlet portal | http://localhost:8080/student-portal/ |
+| phpMyAdmin | http://localhost/phpmyadmin |
+
+The registration page can also be opened directly from disk (double-click `register.html`); validation works the same, and a valid form shows an "offline demo mode" success message because there is no PHP server to save it.
+
+## 10. Demo Credentials (local demonstration only)
+
+| Where | Username | Password |
+|---|---|---|
+| PHP admin panel **and** Servlet portal | `admin` | `Admin@123` |
+| PHP admin panel **and** Servlet portal | `faculty` | `Faculty@123` |
+| Sample students' own password (stored as hash, for future use) | – | `Student@123` |
+| MySQL (XAMPP default) | `root` | *(empty)* |
+
+All passwords are stored only as **bcrypt hashes** (`password_hash()`); the Servlet verifies the same hashes with jBCrypt. Change them before any real deployment.
+
+## 11. Features
+
+- Responsive, consistent UI across all three modules (custom CSS, no framework)
+- Live client-side validation with inline messages, an error summary, password strength meter, show/hide password, photo preview and reset handling
+- Server-side re-validation of everything in PHP (JavaScript can be bypassed)
+- Admin dashboard with statistics, search (name/roll/email) and course filter
+- Full CRUD with confirmation page before delete; deleting a student also removes their files from disk
+- Profile photo + multiple documents per student (ID proof, certificate, mark sheet…)
+- Uploaded files listed with preview, category, type, size, upload date, View / Download / Delete
+- Servlet portal with student cards, search/filter, profile page, image and PDF streaming, inline view or forced download
+- Friendly error pages (400/403/404/405/500) without stack traces
+
+## 12. Security Measures
+
+| Area | Measure |
+|---|---|
+| SQL injection | PDO / JDBC **prepared statements** everywhere (`EMULATE_PREPARES=false`) |
+| Passwords | bcrypt via `password_hash()`; `password_verify()` (PHP) and `BCrypt.checkpw()` (Java); same error for wrong user or wrong password |
+| XSS | `htmlspecialchars()` (`e()` helper) in PHP; `<c:out>` / `fn:escapeXml` in JSP; `textContent` in JS |
+| Sessions | PHP: HttpOnly + SameSite cookie, `session_regenerate_id()` on login, 30-min idle timeout. Java: `getSession(false)` checks, session invalidated & recreated on login (fixation), 30-min timeout, HttpOnly cookie, cookie-only tracking, `no-store` on protected pages |
+| CSRF | token on every PHP POST form (add/edit/delete/upload/logout) checked with `hash_equals()` |
+| Upload validation | upload error codes, `is_uploaded_file()`, size limits (2 MB photos / 5 MB documents), extension whitelist, dangerous double-extension check, **real MIME type via `finfo`**, `getimagesize()` for images |
+| No overwriting | random 32-hex stored names (`random_bytes`) + existence check; `stored_name` UNIQUE in DB |
+| No execution | `uploads/.htaccess`: `Require all denied`, PHP engine off, handlers removed; files only served by `view_file.php` / `FileDownloadServlet` with whitelisted `Content-Type` and `X-Content-Type-Options: nosniff` |
+| Path traversal | PHP `realpath()` + prefix check; Java `toRealPath()` + `startsWith(uploadsDir)`; raw paths never sent to the browser |
+| Direct access | `config/` and `includes/` deny web access; JSPs hidden in `WEB-INF` |
+| Secrets | DB credentials in one config file per module, overridable with environment variables |
+
+## 13. Testing
+
+Detailed test cases with actual results are in [`docs/TESTING.md`](docs/TESTING.md) (18 frontend, 29 PHP and 24 Servlet cases – 71 in total, all passed). Quality checks performed:
+
+- `php -l` on every PHP file – no syntax errors
+- `build.bat` compile + WAR packaging with JDK 24 (`-source 8 -target 8`) – success; deployed to Tomcat 8.5.96 – no errors
+- `schema.sql` imported into MariaDB 10.4.32 – success
+- End-to-end browser automation of every workflow (screenshots) + `curl` checks of headers, redirects, path traversal, CSRF, SQL-injection and XSS attempts
+
+## 14. GitHub
+
+Repository: **https://github.com/Mithu2706/WT_Assignment**
+
+To run it on another computer, clone it straight into XAMPP's web root under the folder name `student-portal` (the URLs and `db.properties` expect that name):
+
+```bash
+git clone https://github.com/Mithu2706/WT_Assignment.git C:\xampp\htdocs\student-portal
+```
+
+Then follow sections 6–9 (import the database, start Apache/MySQL, build and deploy the servlet WAR).
+
+## 15. Screenshots
+
+All screenshots were captured from the running application – see [`Screenshots/README.md`](Screenshots/README.md) for the list and the requirement each one demonstrates.
 
 | | |
 |---|---|
-| ![Validation](screenshots/04-registration-validation-errors.png) Registration validation | ![Success](screenshots/07-registration-success.png) Server accepted registration |
-| ![Dashboard](screenshots/10-php-dashboard.png) PHP admin dashboard | ![List](screenshots/11-php-student-list.png) PHP student list |
-| ![Add](screenshots/15-php-add-student-form.png) Add student with uploads | ![Profile](screenshots/18-php-student-profile-documents.png) PHP profile with image + documents |
-| ![Servlet list](screenshots/23-servlet-student-list.png) Servlet/JSP student list | ![Servlet profile](screenshots/24-servlet-profile-multiple-files.png) Servlet profile, images via Servlet |
-| ![No files](screenshots/25-servlet-profile-no-files.png) Student with zero files | ![Forbidden](screenshots/34-servlet-student-forbidden.png) Student blocked from another profile |
-
----
-
-## Quick start (Windows + XAMPP)
-
-Full step-by-step instructions, including VS Code and troubleshooting: **[docs/SETUP.md](docs/SETUP.md)**.
-
-**Prerequisites:** XAMPP (Apache, PHP 8.1+, MariaDB/MySQL; its bundled Tomcat 8.5 works), JDK 11+ (tested with JDK 24). Maven is **not** needed (the Maven Wrapper downloads it). Python 3 + `requests` only for the automated tests.
-
-```powershell
-# 1. Database: schema + sample data (run from the project folder, MySQL running in XAMPP)
-C:\xampp\mysql\bin\mysql.exe -u root -p < database\schema.sql
-C:\xampp\mysql\bin\mysql.exe -u root -p wt_student_portal < database\sample_data.sql
-
-# 2. Low-privilege DB user: copy database\create_app_user.sql.example, set a password, run it
-C:\xampp\mysql\bin\mysql.exe -u root -p < database\create_app_user.local.sql
-
-# 3. Configuration: copy the template and put the same DB password in it
-copy .env.example .env
-
-# 4. First admin account (you choose the password - nothing is hard-coded)
-C:\xampp\php\php.exe php-admin\bin\create_user.php --role=admin --username=admin --name="Portal Admin"
-
-# 5. Demo files for the sample students (goes through the real upload validator)
-C:\xampp\php\php.exe php-admin\bin\seed_sample_files.php
-
-# 6. Serve the project with XAMPP's Apache (junction = no copying)
-cmd /c mklink /J C:\xampp\htdocs\wt-portal C:\path\to\this\project
-
-# 7. Build + deploy the Servlet module to Tomcat, then start Tomcat from the XAMPP control panel
-java-servlet\deploy-tomcat.bat
-```
-
-## Application URLs
-
-| Module | URL | Who |
-|---|---|---|
-| Landing page | http://localhost/wt-portal/ | everyone |
-| **Q1** Registration form | http://localhost/wt-portal/frontend/register.html | public |
-| **Q2** PHP admin panel | http://localhost/wt-portal/php-admin/public/ | role `admin` |
-| **Q3** Servlet profile portal | http://localhost:8080/student-portal-servlet/ | roles `admin`, `staff`, `student` |
-
-The PHP URLs are served by **Apache on port 80**; the Servlet URLs by **Tomcat on port 8080**.
-
-Accounts: create them with `php-admin/bin/create_user.php` (`--role=admin|staff|student`). Students who register through the form can sign in to the Servlet portal with their **roll number** and password.
-
----
-
-## Project structure
-
-```
-WT_Assi2/
-├── frontend/                 Q1: index.html, register.html, css/style.css, js/validation.js, tests/
-├── php-admin/                Q2
-│   ├── config/config.php     reads the shared .env
-│   ├── includes/             bootstrap, Auth, Csrf, Session, Database, Validator, FileStorage,
-│   │                         Repositories, StudentService, helpers, views/
-│   ├── public/               the ONLY web-reachable PHP folder (pages, file.php, register.php, assets)
-│   ├── bin/                  create_user.php, delete_user.php, seed_sample_files.php (CLI)
-│   └── tests/run_tests.php   PHP test suite
-├── java-servlet/             Q3: pom.xml, mvnw(.cmd), deploy-tomcat.bat
-│   └── src/main/java/edu/webtech/portal/{model,dao,servlet,filter,listener,util}
-│       src/main/webapp/WEB-INF/{web.xml,views/*.jsp}, assets/
-│       src/test/java/...     JUnit 5 tests
-├── database/                 schema.sql, sample_data.sql, create_app_user.sql.example, sample-files/
-├── storage/uploads/          uploaded files (git-ignored, private)
-├── tests/                    e2e_test.py, capture_screenshots.py, generate_fixtures.py, fixtures/
-├── screenshots/              35 real screenshots
-├── docs/                     SETUP, TESTING, CODE_EXPLANATION, CONCLUSION, FINAL_AUDIT
-├── .env.example              configuration template (.env itself is never committed)
-└── README.md
-```
-
-## Documentation
-- [docs/SETUP.md](docs/SETUP.md) - installation on Windows (XAMPP, VS Code, Tomcat, Maven wrapper)
-- [docs/TESTING.md](docs/TESTING.md) - every test suite, how to run it, real results
-- [docs/CODE_EXPLANATION.md](docs/CODE_EXPLANATION.md) - files, tables, upload flow, sessions, JDBC, streaming
-- [docs/CONCLUSION.md](docs/CONCLUSION.md) - conclusion
-- [docs/FINAL_AUDIT.md](docs/FINAL_AUDIT.md) - requirement-by-requirement audit against the rubric
+| ![Registration](Screenshots/01-registration-page.png) | ![Validation](Screenshots/02-registration-validation.png) |
+| ![Dashboard](Screenshots/05-admin-dashboard.png) | ![Student details](Screenshots/11-uploaded-files.png) |
+| ![Servlet list](Screenshots/13-servlet-student-list.png) | ![Servlet profile](Screenshots/14-servlet-student-profile.png) |
