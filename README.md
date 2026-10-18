@@ -46,9 +46,9 @@ A complete, locally runnable student admission portal built in three clearly sep
 | Submission: DB schema script | [`database/schema.sql`](database/schema.sql) |
 | Submission: Screenshots of browser output | [`Screenshots/`](Screenshots/) (40 real screenshots, see [`Screenshots/README.md`](Screenshots/README.md)) |
 | Submission: Explanation of code with inline comments | inline comments in every file + [`docs/CODE_EXPLANATION.md`](docs/CODE_EXPLANATION.md) |
-| Submission: Brief conclusion (3–5 lines) | [`docs/CONCLUSION.md`](docs/CONCLUSION.md) and section 8 of the PDF report |
+| Submission: Brief conclusion (3–5 lines) | [`docs/CONCLUSION.md`](docs/CONCLUSION.md) and the Conclusion of the PDF report |
 | Submission report (cover page, aim, implementation, code explanation, output, result per question) | [`Mithuna_Kamalanathan_24CS117_Web_Technology_Assignment_II_FINAL.pdf`](Mithuna_Kamalanathan_24CS117_Web_Technology_Assignment_II_FINAL.pdf) |
-| Submission: GitHub repository link | see [section 14](#14-github) |
+| Submission: GitHub repository link | see [section 13](#13-github) |
 
 ## 3. Technologies Used
 
@@ -59,29 +59,7 @@ A complete, locally runnable student admission portal built in three clearly sep
 - **Servers:** Apache 2.4 (XAMPP) for PHP, Apache Tomcat 8.5 (bundled with XAMPP) or Tomcat 9 for the servlets
 - **Build:** Maven (`pom.xml`) **or** the included `build.bat` (JDK only, no Maven required)
 
-## 4. Architecture
-
-```
-                 ┌──────────────────────────┐
-  Browser ──────►│ Question1_Frontend/ (HTML/CSS/JS)  │── valid form POST ──┐
-                 └──────────────────────────┘                     ▼
-                 ┌──────────────────────────┐   PDO      ┌──────────────────┐
-  Admin ────────►│ Question2_PHP/ (Apache+PHP)  │───────────►│  MySQL database  │
-                 │  CRUD, uploads, sessions │            │  student_portal  │
-                 └────────────┬─────────────┘            │  users           │
-                              │ writes files              │  students        │
-                              ▼                           │  student_files   │
-                 Question2_PHP/uploads/profiles|documents     └────────▲─────────┘
-                              ▲ reads files (safe path)            │ JDBC
-                 ┌────────────┴─────────────┐                      │
-  Faculty ──────►│ Question3_Servlet/ (Tomcat) │──────────────────────┘
-                 │  Servlets + JSP + DAO    │
-                 └──────────────────────────┘
-```
-
-The servlet application follows **MVC**: Servlets (controller) → DAO classes (JDBC, model access) → JSP views in `WEB-INF/views` (cannot be opened directly, only through a servlet that has checked the session).
-
-## 5. Folder Structure
+## 4. Folder Structure
 
 ```
 student-portal/
@@ -146,7 +124,7 @@ student-portal/
 >
 > **Deviation from the suggested structure (deliberate):** the JSP pages live in `WEB-INF/views/` instead of the web root so that a browser can never open a JSP directly and bypass the servlet's session check. A few helper files (`functions.php`, `upload_handler.php`, `student_form.php`, `view_file.php`, `register.php`, `UserDAO`, `SessionUtil`) were added to avoid duplicated code.
 
-## 6. Database Setup
+## 5. Database Setup
 
 The database is shared by PHP and Java. Import the script **once** (it drops and recreates the tables):
 
@@ -164,7 +142,7 @@ C:\xampp\mysql\bin\mysql.exe -u root student_portal < sample-data\sample_student
 
 Tables: `users` (login accounts), `students` (records; `roll_number` and `email` UNIQUE), `student_files` (file metadata; `student_id` FOREIGN KEY → `students.id` with `ON DELETE CASCADE`).
 
-## 7. PHP Setup (XAMPP / WAMP)
+## 6. PHP Setup (XAMPP / WAMP)
 
 1. Install **XAMPP** (includes Apache, PHP 8.2, MariaDB and phpMyAdmin). WAMP works the same way (`C:\wamp64\www`).
 2. Start **Apache** and **MySQL** from the XAMPP Control Panel.
@@ -174,12 +152,12 @@ Tables: `users` (login accounts), `students` (records; `roll_number` and `email`
      ```bash
      mklink /J C:\xampp\htdocs\student-portal C:\path\to\student-portal
      ```
-4. Import the database (section 6).
+4. Import the database (section 5).
 5. If your MySQL user/password are not `root` / *(empty)*, edit `Question2_PHP/config/database.php` (`DB_USER`, `DB_PASS`) or set the environment variables `SP_DB_USER` / `SP_DB_PASS`.
 6. Make sure `Question2_PHP/uploads/profiles` and `Question2_PHP/uploads/documents` are writable by Apache (they are by default on Windows/XAMPP).
 7. Required PHP extensions: `pdo_mysql`, `fileinfo`, `mbstring` (all enabled in XAMPP). XAMPP's `AllowOverride All` must stay enabled so the `.htaccess` protections work.
 
-## 8. Servlet Setup (Tomcat)
+## 7. Servlet Setup (Tomcat)
 
 **Requirements:** JDK 8 or newer (tested with JDK 24), Apache Tomcat **8.5 or 9** (`javax.servlet` API – XAMPP's bundled `C:\xampp\tomcat` is Tomcat 8.5.96), MySQL Connector/J (already in `Question3_Servlet/lib`).
 
@@ -212,7 +190,7 @@ Tables: `users` (login accounts), `students` (records; `roll_number` and `email`
    ```
 5. Open `http://localhost:8080/student-portal/`.
 
-## 9. Running the Project
+## 8. Running the Project
 
 | What | URL |
 |---|---|
@@ -224,7 +202,7 @@ Tables: `users` (login accounts), `students` (records; `roll_number` and `email`
 
 The registration page can also be opened directly from disk (double-click `register.html`); validation works the same, and a valid form shows an "offline demo mode" success message because there is no PHP server to save it.
 
-## 10. Demo Credentials (local demonstration only)
+## 9. Demo Credentials (local demonstration only)
 
 | Where | Username | Password |
 |---|---|---|
@@ -235,7 +213,7 @@ The registration page can also be opened directly from disk (double-click `regis
 
 All passwords are stored only as **bcrypt hashes** (`password_hash()`); the Servlet verifies the same hashes with jBCrypt. Change them before any real deployment.
 
-## 11. Features
+## 10. Features
 
 - Responsive, consistent UI across all three modules (custom CSS, no framework)
 - Live client-side validation with inline messages, an error summary, password strength meter, show/hide password, photo preview and reset handling
@@ -247,7 +225,7 @@ All passwords are stored only as **bcrypt hashes** (`password_hash()`); the Serv
 - Servlet portal with student cards, search/filter, profile page, image and PDF streaming, inline view or forced download
 - Friendly error pages (400/403/404/405/500) without stack traces
 
-## 12. Security Measures
+## 11. Security Measures
 
 | Area | Measure |
 |---|---|
@@ -263,7 +241,7 @@ All passwords are stored only as **bcrypt hashes** (`password_hash()`); the Serv
 | Direct access | `config/` and `includes/` deny web access; JSPs hidden in `WEB-INF` |
 | Secrets | DB credentials in one config file per module, overridable with environment variables |
 
-## 13. Testing
+## 12. Testing
 
 Detailed test cases with actual results are in [`docs/TESTING.md`](docs/TESTING.md) (18 frontend, 29 PHP and 24 Servlet cases – 71 in total, all passed). Quality checks performed:
 
@@ -272,7 +250,7 @@ Detailed test cases with actual results are in [`docs/TESTING.md`](docs/TESTING.
 - `schema.sql` imported into MariaDB 10.4.32 – success
 - End-to-end browser automation of every workflow (screenshots) + `curl` checks of headers, redirects, path traversal, CSRF, SQL-injection and XSS attempts
 
-## 14. GitHub
+## 13. GitHub
 
 Repository: **https://github.com/Mithu2706/WT_Assignment**
 
@@ -282,9 +260,9 @@ To run it on another computer, clone it straight into XAMPP's web root under the
 git clone https://github.com/Mithu2706/WT_Assignment.git C:\xampp\htdocs\student-portal
 ```
 
-Then follow sections 6–9 (import the database, start Apache/MySQL, build and deploy the servlet WAR).
+Then follow sections 5–8 (import the database, start Apache/MySQL, build and deploy the servlet WAR).
 
-## 15. Screenshots
+## 14. Screenshots
 
 All screenshots were captured from the running application – see [`Screenshots/README.md`](Screenshots/README.md) for the list and the requirement each one demonstrates.
 
